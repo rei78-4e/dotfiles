@@ -10,9 +10,6 @@ end
 fish_add_path -g $HOME/.nix-profile/bin
 
 if status is-interactive
-    # pinentry-curses needs the terminal that invoked gpg.  programs.fish is
-    # intentionally not managed by Home Manager, so mirror gpg-agent's shell
-    # integration here.
     set -gx GPG_TTY (tty)
 
     if not type -q fisher
@@ -64,10 +61,6 @@ set -gx HSA_OVERRIDE_GFX_VERSION 10.3.0
 set -gx OLLAMA_DEBUG 1
 set -gx OLLAMA_HOST 0.0.0.0:11434
 set -gx LIBVIRT_DEFAULT_URI qemu:///system
-# home-manager が zsh には session vars で渡している分 (fish は HM 非管理)
-# set -gx CC clang
-# set -gx CXX clang++
-# set -gx LD lld
 set -gx ZIGGITY_CONFIG "$HOME/.config/ziggity/config.ini"
 # npm
 fish_add_path -g $HOME/.npm-global/bin
@@ -77,10 +70,6 @@ if test -n "$SSH_CONNECTION"; and test -z "$TERM"
     set -gx TERM xterm-256color
 end
 
-# gcr-ssh-agent (GDM ログイン時に gnome-keyring が解錠した鍵) を SSH セッション
-# からも使う。SSH_AUTH_SOCK が既にあれば (例: ssh -A の agent forwarding)
-# そちらを優先する。コンソール未ログイン (ヘッドレス起動) なら socket が無く
-# 何も起きない。
 if test -z "$SSH_AUTH_SOCK"; and test -S "$XDG_RUNTIME_DIR/gcr/ssh"
     set -gx SSH_AUTH_SOCK "$XDG_RUNTIME_DIR/gcr/ssh"
 end
@@ -94,16 +83,7 @@ set -gx QT_IM_MODULE fcitx
 set -gx XMODIFIERS @im=fcitx
 set -gx HYPRSHOT_DIR "$HOME/Desktop/"
 
-set -gx EDITOR nvim
-# SSH_ASKPASS_REQUIRE / SSH_ASKPASS はここで設定しないこと。
-# GDM は niri-session をログインシェル (fish -c) 経由で起動するため、
-# ここでの set -gx が niri-session の `systemctl --user import-environment` で
-# systemd user manager に取り込まれ、全ユーザーサービスに伝播する。
-# SSH_ASKPASS_REQUIRE=never が gcr-ssh-agent に入ると、鍵の解錠に使う ssh-add が
-# askpass (キーリングから passphrase を取る経路) を拒否し、
-# 「agent refused operation」で GitHub の署名が失敗する。
-
-# home-manager が zsh には session vars で渡している分 (fish は HM 非管理)
+set -gx EDITOR hx
 set -gx NPM_CONFIG_PREFIX $HOME/.npm-global
 set -gx BUN_INSTALL $HOME/.cache/.bun
 
@@ -254,8 +234,6 @@ function wifi
     test -n "$ssid"; and nmcli device wifi connect "$ssid" --ask
 end
 
-abbr -a ff 'fastfetch --logo-type kitty --logo ~/Pictures/illustrations/cat_pol.jpeg'
-
 #  ╔═╗ ╦═╗ ╔═╗ ╔═╗ ╦═╗ ╔═╗ ╔╦╗ ╔╦╗ ╦ ╔╗╔ ╔═╗
 #  ╠═╝ ╠╦╝ ║ ║ ║ ╦ ╠╦╝ ╠═╣ ║║║ ║║║ ║ ║║║ ║ ╦
 #  ╩   ╩╚═ ╚═╝ ╚═╝ ╩╚═ ╩ ╩ ╩ ╩ ╩ ╩ ╩ ╝╚╝ ╚═╝
@@ -288,19 +266,36 @@ end
 # ╝╚╝ ╩ ╩ ╚═
 
 abbr -a nd 'nix develop -c $SHELL'
-abbr -a nbuild 'sudo nixos-rebuild switch --flake .#(rebuild_host)'
 abbr -a update 'nix flake update'
 abbr -a ns 'nix search nixpkgs'
 
 function rebuild_host
+    if test -f /etc/dotfiles-host
+        set -l host (string trim (cat /etc/dotfiles-host))
+        if test -f "$HOME/dotfiles/hosts/$host/configuration.nix"
+            echo $host
+            return 0
+        end
+        echo "rebuild: invalid host in /etc/dotfiles-host: $host" >&2
+        return 1
+    end
+
     set -l cur (hostname)
     for dir in $HOME/dotfiles/hosts/*/
         if grep -q "networking.hostName = \"$cur\"" $dir/configuration.nix 2>/dev/null
             path basename $dir
-            return
+            return 0
         end
     end
-    echo desktop
+
+    # Old hostname during the transition to neve, before /etc/dotfiles-host exists.
+    if test "$cur" = selinoir
+        echo thinkpad
+        return 0
+    end
+
+    echo "rebuild: no host configuration found for hostname $cur" >&2
+    return 1
 end
 
 function rebuild
@@ -315,6 +310,7 @@ function rebuild
         sudo darwin-rebuild switch --flake $HOME/dotfiles#macbook $opts
     else if test -f /etc/NIXOS
         set -l host (rebuild_host)
+        or return 1
         echo "sudo nixos-rebuild switch --flake .#$host $opts"
         sudo nixos-rebuild switch --flake .#$host $opts
     else

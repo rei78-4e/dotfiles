@@ -24,7 +24,7 @@ environment {
 
 prefer-no-csd
 
-screenshot-path "~/Desktop/ScreenShot_%Y-%m-%d_at_%H.%M.%S.png"
+screenshot-path "~/Desktop/ScreenShot_%Y-%m-%d_at_%H_%M_%S.png"
 
 overview {
   zoom 0.48
@@ -89,7 +89,7 @@ input {
 
 output "DP-1" {
     mode "3840x2160"
-    scale 1.5
+    scale 1.25
     position x=0 y=0
 }
 
@@ -315,19 +315,15 @@ binds {
     Super+V { toggle-window-floating; }
     Super+D { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Super+C { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
-    // Toggle a dedicated floating Kitty. The other two bindings retain the
-    // dedicated Emacs scratchpad.
     Super+Backslash { spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"; }
     Super+bracketleft { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
     Super+bracketright { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
-    Super+shift+D { spawn-sh "$HOME/dotfiles/script/niri_views.sh"; }
+    Super+Shift+D { spawn-sh "$HOME/dotfiles/script/niri_views.sh"; }
+    Super+F { maximize-column; }
     Super+Shift+F { fullscreen-window; }
     Super+O repeat=false { toggle-overview; }
     Super+Alt+Z repeat=false { spawn "wooz" "--zoom-in" "50%" "--mouse-track"; }
     Super+Shift+V { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
-
-    Super+F { maximize-column; }
-    Super+Ctrl+F { maximize-window-to-edges; }
 
     // --- focus ---
     Super+Left { focus-column-left; }
@@ -341,6 +337,14 @@ binds {
     Super+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
     Super+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
 
+    // --- monitors (stacked vertically: DP-1 top, eDP-1 bottom) ---
+    Super+Ctrl+J { focus-monitor-down; }
+    Super+Ctrl+K { focus-monitor-up; }
+    Super+Ctrl+L { focus-monitor-right; }
+    Super+Ctrl+H { focus-monitor-left; }
+    Super+Ctrl+Home { move-column-to-first; }
+    Super+Ctrl+End { move-column-to-last; }
+
     Super+1 { focus-workspace 1; }
     Super+2 { focus-workspace 2; }
     Super+3 { focus-workspace 3; }
@@ -351,10 +355,6 @@ binds {
     Super+8 { focus-workspace 8; }
     Super+9 { focus-workspace 9; }
     Super+0 { focus-workspace 10; }
-
-    // jump to first/last column (head/tail)
-    Super+Home { focus-column-first; }
-    Super+End { focus-column-last; }
 
     // --- moves ---
     Super+Shift+J { move-window-to-workspace-down; }
@@ -374,13 +374,11 @@ binds {
     Super+Shift+0 { move-window-to-workspace 10; }
     Super+Shift+M { spawn-sh "$HOME/dotfiles/script/move_to_display.sh"; }
 
-    // --- monitors (stacked vertically: DP-1 top, eDP-1 bottom) ---
-    Super+Ctrl+J { focus-monitor-down; }
-    Super+Ctrl+K { focus-monitor-up; }
-    Super+Ctrl+L { focus-monitor-right; }
-    Super+Ctrl+H { focus-monitor-left; }
-    Super+Ctrl+Home { move-column-to-first; }
-    Super+Ctrl+End { move-column-to-last; }
+    Super+Shift+Ctrl+J { move-window-to-monitor-down; }
+    Super+Shift+Ctrl+K { move-window-to-monitor-up; }
+    Super+Shift+Ctrl+L { move-window-to-monitor-right; }
+    Super+Shift+Ctrl+H { move-window-to-monitor-left; }
+
 
     // resize
     Super+R { switch-preset-column-width; }
