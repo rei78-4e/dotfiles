@@ -60,4 +60,22 @@ config.local.fish
 .config/herdr/session.json
 .config/emacs/.org-id-locations
 /.config/emacs/tramp
-.config/opencode/plugins/herdr-agent-state.js
+
+# Integration managed by herdr
+/.config/opencode/plugins/herdr-agent-state.js
+
+# One-off disk maintenance files
+/storage/
+
+# OBS: keep scene collections and recording profiles only
+/.config/obs-studio/*
+!/.config/obs-studio/basic/
+/.config/obs-studio/basic/*
+!/.config/obs-studio/basic/scenes/
+!/.config/obs-studio/basic/profiles/
+/.config/obs-studio/basic/scenes/*
+!/.config/obs-studio/basic/scenes/*.json
+/.config/obs-studio/basic/profiles/*
+!/.config/obs-studio/basic/profiles/*/
+/.config/obs-studio/basic/profiles/*/*
+!/.config/obs-studio/basic/profiles/*/basic.ini
