@@ -231,6 +231,7 @@ let
     wooz
     gnome-calendar
     thunderbird
+    evolution
   ];
 
   # Keep small daily tools that Fedora's enabled repositories do not provide.
@@ -423,12 +424,20 @@ in
         source = mkConfigLink "niri";
         recursive = false;
       };
+      "ghostty" = {
+        source = mkConfigLink "ghostty";
+        recursive = false;
+      };
       "waybar" = {
         source = mkConfigLink "waybar";
         recursive = false;
       };
       "noctalia" = {
         source = mkConfigLink "noctalia";
+        recursive = false;
+      };
+      "obs-studio" = {
+        source = mkConfigLink "obs-studio";
         recursive = false;
       };
     };

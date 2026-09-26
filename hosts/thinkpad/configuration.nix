@@ -17,7 +17,8 @@ in
     # ../../modules/thinkpad.nix
   ];
 
-  networking.hostName = "selinoir";
+  networking.hostName = "neve";
+  environment.etc."dotfiles-host".text = "thinkpad\n";
   networking.networkmanager.enable = true;
   networking.networkmanager.dns = "none";
   networking.nameservers = [
@@ -58,9 +59,9 @@ in
   services.gvfs.enable = true;
 
   services.logind.settings.Login = {
-    HandleLidSwitch = "suspend";
-    HandleLidSwitchExternalPower = "suspend";
-    HandleLidSwitchDocked = "suspend";
+    HandleLidSwitch = "hibernate";
+    HandleLidSwitchExternalPower = "hibernate";
+    HandleLidSwitchDocked = "hibernate";
   };
 
   services.fprintd.enable = true;
@@ -107,10 +108,6 @@ in
       ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0a70", \
       MODE="0660", GROUP="users", TAG+="uaccess", TAG+="udev-acl"
   '';
-  boot.initrd.luks.devices."luks-4cbdc1f5-be3a-4e0d-a0c9-51865546e644" = {
-    device = "/dev/disk/by-uuid/4cbdc1f5-be3a-4e0d-a0c9-51865546e644";
-  };
-
   fileSystems."/mnt/bk_disk" = {
     device = "/dev/mapper/bk_disk";
     fsType = "ext4";
@@ -120,9 +117,49 @@ in
     ];
   };
 
+  swapDevices = [
+    {
+      device = "/swapfile";
+      # Leave room for the hibernation image as well as ordinary swap use.
+      # Apply size changes at boot, before this file becomes active swap.
+      size = 16384;
+      # Prefer zram for ordinary swapping; keep disk swap for hibernation.
+      priority = 10;
+    }
+  ];
+
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+    priority = 100;
+  };
+
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages;
+
+  # systemd records the swapfile's current offset in HibernateLocation (EFI).
+  # The initrd unlocks the root LUKS device and resumes before mounting ext4.
+  # Do not hard-code resume_offset: recreating the swapfile can change it.
+  boot.initrd.systemd.enable = true;
+  systemd.sleep.settings.Sleep = {
+    AllowHibernation = true;
+    AllowSuspendThenHibernate = true;
+    # Start suspend after 15 idle minutes, then hibernate 15 minutes later.
+    HibernateDelaySec = "15min";
+    HibernateOnACPower = false;
+  };
+
+  # The persistent boot default may point to another OS. Resume with the same
+  # boot entry/kernel that wrote the image, without changing that default.
+  systemd.services = lib.genAttrs
+    [ "systemd-hibernate" "systemd-suspend-then-hibernate" ]
+    (_: {
+      serviceConfig.ExecStartPre = [
+        "${pkgs.systemd}/bin/bootctl set-oneshot @current"
+      ];
+    });
 
   nix.settings.experimental-features = [
     "nix-command"

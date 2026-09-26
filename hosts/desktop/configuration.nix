@@ -18,6 +18,7 @@ in
   ];
 
   networking.hostName = "rei78";
+  environment.etc."dotfiles-host".text = "desktop\n";
   networking.networkmanager.enable = true;
   networking.networkmanager.dns = "none";
   networking.nameservers = [

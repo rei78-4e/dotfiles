@@ -1,9 +1,23 @@
 {
+  config,
   pkgs,
   lib,
   ...
 }:
 let
+  secretService = pkgs.writeShellScript "session-secret-service" ''
+    case ":''${XDG_CURRENT_DESKTOP:-}:" in
+      *:niri:*)
+        # Complete PAM startup before D-Bus can launch another daemon.
+        ${pkgs.systemd}/bin/systemctl --user start niri-kwallet.service
+        exec ${pkgs.kdePackages.kwallet}/bin/ksecretd
+        ;;
+      *)
+        exec /run/wrappers/bin/gnome-keyring-daemon --start --foreground --components=secrets
+        ;;
+    esac
+  '';
+
   waybarLaunch = pkgs.writeShellScript "waybar-launch" ''
     set -eu
     BASE="$HOME/dotfiles/.config/waybar"
@@ -64,11 +78,39 @@ let
       /run/current-system/sw/bin/hyprctl dispatch dpms on
     fi
   '';
-  swayidleHibernate = pkgs.writeShellScript "swayidle-hibernate" ''
-    [ "$(cat /sys/class/power_supply/AC/online)" = 0 ] \
-      && ! /run/current-system/sw/bin/pw-dump \
-        | /run/current-system/sw/bin/jq -e 'any(.[]; .info.props."media.class"=="Stream/Output/Audio" and .info.state=="running")' >/dev/null \
-      && systemctl hibernate
+  idleSuspendThenHibernate = config.systemd.sleep.settings.Sleep.AllowSuspendThenHibernate or false;
+  swayidleSleep = pkgs.writeShellScript "swayidle-sleep" ''
+    set -euo pipefail
+    [ "$(cat /sys/class/power_supply/AC/online)" = 0 ] || exit 0
+
+    ${lib.optionalString idleSuspendThenHibernate ''
+      lid=$(${pkgs.systemd}/bin/busctl get-property \
+        org.freedesktop.login1 /org/freedesktop/login1 \
+        org.freedesktop.login1.Manager LidClosed)
+      [ "$lid" = "b false" ] || exit 0
+    ''}
+
+    operation="$1"
+    case "$operation" in
+      suspend-then-hibernate) method=CanSuspendThenHibernate ;;
+      hibernate) method=CanHibernate ;;
+      *) exit 2 ;;
+    esac
+    can_sleep() {
+      local capability
+      capability=$(${pkgs.systemd}/bin/busctl --json=short call \
+        org.freedesktop.login1 /org/freedesktop/login1 \
+        org.freedesktop.login1.Manager "$1") || return 1
+      /run/current-system/sw/bin/jq -e '.data == ["yes"]' \
+        <<< "$capability" >/dev/null
+    }
+    if ! can_sleep "$method"; then
+      # Still suspend at 15 minutes if hibernation is temporarily unavailable.
+      [ "$operation" = suspend-then-hibernate ] || exit 0
+      can_sleep CanSuspend || exit 0
+      operation=suspend
+    fi
+    exec ${pkgs.systemd}/bin/systemctl --no-ask-password "$operation"
   '';
 
   swayidleLock = pkgs.writeShellScript "swayidle-lock" ''
@@ -80,7 +122,8 @@ let
     exec ${pkgs.swayidle}/bin/swayidle -w \
       timeout 480 ${swayidleBrightnessDown} resume ${swayidleBrightnessUp} \
       timeout 3600 ${swayidleLockOff} resume ${swayidleMonitorsOn} \
-      timeout 1800 ${swayidleHibernate} \
+      ${lib.optionalString idleSuspendThenHibernate "timeout 900 '${swayidleSleep} suspend-then-hibernate'"} \
+      timeout 1800 '${swayidleSleep} hibernate' \
       lock ${swayidleLock} \
       before-sleep 'loginctl lock-session'
   '';
@@ -88,10 +131,55 @@ in
 {
   # ===== desktop base (entire system) =====
   services.desktopManager.gnome.enable = true;
-  services.xserver.desktopManager.xfce.enable = true;
+  services.desktopManager.plasma6.enable = true;
   services.displayManager.defaultSession = "niri";
   programs.ssh.askPassword = "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
   programs.niri.enable = true;
+  # Secret Service activation must select the same wallet as the session.
+  # PAM starts GNOME Keyring with --login (initialization is deferred); keep
+  # that password handoff for GNOME, but do not initialize it under niri.
+  home-manager.sharedModules = [
+    {
+      xdg.dataFile."dbus-1/services/org.freedesktop.secrets.service".text = ''
+        [D-BUS Service]
+        Name=org.freedesktop.secrets
+        Exec=${secretService}
+      '';
+      xdg.configFile = lib.genAttrs
+        [ "autostart/gnome-keyring-secrets.desktop" "autostart/gnome-keyring-pkcs11.desktop" ]
+        (name: {
+          text = ''
+            [Desktop Entry]
+            Type=Application
+            Name=GNOME Keyring
+            Exec=/run/wrappers/bin/gnome-keyring-daemon --start --components=${if lib.hasInfix "pkcs11" name then "pkcs11" else "secrets"}
+            NotShowIn=niri;
+            NoDisplay=true
+            X-GNOME-Autostart-Phase=PreDisplayServer
+            X-GNOME-AutoRestart=false
+            X-GNOME-Autostart-Notify=true
+          '';
+        });
+    }
+  ];
+  # niri-session imports PAM's environment; this helper passes the ready
+  # Wayland session environment to the KWallet daemon started by PAM.
+  security.pam.services.login.kwallet.enable = true;
+  systemd.user.services.niri-kwallet = {
+    description = "Unlock KWallet in niri using the login password";
+    unitConfig = {
+      ConditionEnvironment = "XDG_CURRENT_DESKTOP=niri";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.kdePackages.kwallet-pam}/libexec/pam_kwallet_init";
+      RemainAfterExit = true;
+    };
+    wantedBy = [ "graphical-session.target" ];
+  };
+  xdg.portal.config.niri."org.freedesktop.impl.portal.Secret" = lib.mkForce "kwallet";
   programs.hyprlock.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {

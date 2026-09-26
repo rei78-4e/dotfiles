@@ -60,3 +60,4 @@ config.local.fish
 .config/herdr/session.json
 .config/emacs/.org-id-locations
 /.config/emacs/tramp
+.config/opencode/plugins/herdr-agent-state.js
