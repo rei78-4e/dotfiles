@@ -160,7 +160,7 @@
             "id": "text_ft2_source",
             "versioned_id": "text_ft2_source_v2",
             "settings": {
-                "text": "せの(Senox78)/Rei",
+                "text": "れい(Senox78)",
                 "font": {
                     "face": "Moralerspace Radon HW",
                     "style": "Bold",
@@ -462,7 +462,7 @@
                             "y": 1080.0
                         },
                         "align": 5,
-                        "bounds_type": 0,
+                        "bounds_type": 1,
                         "bounds_align": 0,
                         "bounds_crop": false,
                         "crop_left": 0,
@@ -472,28 +472,28 @@
                         "id": 3,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 141.0,
-                            "y": 224.0
+                            "x": 0.0,
+                            "y": 0.0
                         },
                         "pos_rel": {
-                            "x": -1.5166666507720947,
-                            "y": -0.585185170173645
+                            "x": -1.7777777910232544,
+                            "y": -1.0
                         },
                         "scale": {
-                            "x": 4.726250171661377,
-                            "y": 4.726666450500488
+                            "x": 1.0,
+                            "y": 1.0
                         },
                         "scale_rel": {
-                            "x": 4.726250171661377,
-                            "y": 4.726666450500488
+                            "x": 1.0,
+                            "y": 1.0
                         },
                         "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1920.0,
+                            "y": 1080.0
                         },
                         "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 3.555555582046509,
+                            "y": 2.0
                         },
                         "scale_filter": "disable",
                         "blend_method": "default",
@@ -805,11 +805,11 @@
                         "group_item_backup": true,
                         "pos": {
                             "x": 501.00006103515625,
-                            "y": 314.0003662109375
+                            "y": 319.0003662109375
                         },
                         "pos_rel": {
                             "x": -0.8499999046325684,
-                            "y": -0.4185178279876709
+                            "y": -0.4092586040496826
                         },
                         "scale": {
                             "x": 0.5416666865348816,
@@ -1130,11 +1130,11 @@
                         "group_item_backup": false,
                         "pos": {
                             "x": 275.00006103515625,
-                            "y": 0.999755859375
+                            "y": 5.999755859375
                         },
                         "pos_rel": {
                             "x": -1.2685184478759766,
-                            "y": -0.9981486201286316
+                            "y": -0.9888893365859985
                         },
                         "scale": {
                             "x": 0.5416666865348816,
@@ -1487,7 +1487,7 @@
     "saved_projectors": [],
     "preview_locked": false,
     "scaling_enabled": false,
-    "scaling_level": -5,
+    "scaling_level": -4,
     "scaling_off_x": 0.0,
     "scaling_off_y": 0.0,
     "modules": {

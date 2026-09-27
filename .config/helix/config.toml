@@ -1,4 +1,7 @@
-theme = "rose_pine_dawn"
+[theme]
+light = "rose_pine_dawn"
+dark = "rose_pine_moon"
+
 
 [editor]
 auto-info = true

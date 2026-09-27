@@ -10,7 +10,7 @@ cursor-style = bar
 background-opacity = 1
 background-blur-radius = 40
 
-theme = rose-pine-dawn
+theme = rose-pine-moon
 # foreground = #ffffff
 
 window-theme = auto
