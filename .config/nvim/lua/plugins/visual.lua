@@ -204,4 +204,15 @@ return {
       provider_selector = function() return { "treesitter", "indent" } end,
     },
   },
+  {
+    "otnc/package-license-viewer",
+    build = "npm ci && npm run compile:lsp",
+    config = function()
+      vim.opt.rtp:append(
+        vim.fn.stdpath("data") .. "/lazy/package-license-viewer/packages/vim-plugin"
+      )
+
+      vim.cmd("runtime! plugin/package_license_viewer.vim")
+    end,
+  },
 }
