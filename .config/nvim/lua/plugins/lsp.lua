@@ -184,6 +184,13 @@ return {
       })
       vim.lsp.enable("biome")
 
+      vim.lsp.config("tombi", {
+        on_attach = on_attach,
+        capabilities = capabilities,
+        filetypes = { "toml" },
+      })
+      vim.lsp.enable("tombi")
+
       vim.lsp.config("clangd", {
         on_attach = on_attach,
         capabilities = capabilities,

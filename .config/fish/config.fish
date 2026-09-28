@@ -98,9 +98,9 @@ end
 # ╠═╣ ╠╩╗ ╠╩╗ ╠╦╝
 # ╩ ╩ ╚═╝ ╚═╝ ╩╚═
 
-abbr -a mkmk 'toup'
-abbr -a copy 'wl-copy'
-abbr -a c 'wl-copy'
+abbr -a mkmk toup
+abbr -a copy wl-copy
+abbr -a c wl-copy
 
 # ╔═╗ ╔╦╗   ╔═╗ ╔╗  ╔╗  ╦═╗
 # ║    ║║   ╠═╣ ╠╩╗ ╠╩╗ ╠╦╝
@@ -150,7 +150,7 @@ function git-log
         --graph \
         --format=' <%h> %ad [%an] [%G?] %C(green)%d%Creset %s' \
         $limit |
-    awk '{
+        awk '{
         gsub(/\[G\]/, "✓")
         gsub(/\[U\]/, "△")
         gsub(/\[B\]/, "✗")
@@ -160,7 +160,7 @@ function git-log
     }'
 end
 
-abbr -a gla "git-log"
+abbr -a gla git-log
 abbr -a gls "git-log 15"
 abbr -a gf 'git fetch'
 abbr -a gb 'git branch'
@@ -190,11 +190,11 @@ abbr -a lg lazygit
 abbr -a z ziggity
 abbr -a rg 'rg --hidden'
 abbr -a y yazi
-abbr -a h 'hx .'
+abbr -a h 'hxd .'
 abbr -a mi mediainfo
 abbr -a n 'nvim .'
 abbr -a e 'emacs -nw .'
-abbr -a oc 'opencode'
+abbr -a oc opencode
 
 abbr -a reboot 'systemctl reboot'
 
@@ -256,9 +256,9 @@ abbr -a gb 'gleam build'
 abbr -a gr 'gleam run'
 
 function blog
-  cd ~/ghq/github.com/senox78/senox/
-  nix develop -c $SHELL
-  # ./new
+    cd ~/ghq/github.com/senox78/senox/
+    nix develop -c $SHELL
+    # ./new
 end
 
 # ╔╗╔ ╦ ═╗ ╦
@@ -301,7 +301,7 @@ end
 function rebuild
     set -l opts
     if contains -- --local $argv
-        set opts '--option' 'builders' ''
+        set opts --option builders ''
         echo "rebuild: remote builder disabled (--local); builders=\"\""
     end
 

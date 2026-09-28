@@ -16,7 +16,7 @@ return {
           sh = { "shfmt" },
           astro = { "prettier" },
           nix = { "nixfmt" },
-          toml = { "taplo" },
+          toml = { "tombi" },
           typescript = { "biome" },
           typescriptreact = { "biome" },
           javascript = { "biome" },
@@ -44,13 +44,6 @@ return {
             append_args = {
               "-i",
               "2",
-            },
-          },
-          taplo = {
-            append_args = {
-              "fmt",
-              "--option",
-              "array_auto_collapse=false",
             },
           },
           ruff = {

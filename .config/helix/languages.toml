@@ -1,6 +1,9 @@
 [language-server.moonbit-lsp]
 command = "moonbit-lsp"
 
+[language-server.lua-language-server.config.Lua.hint]
+arrayIndex = "Disable"
+
 [[language]]
 name = "moonbit"
 scope = "source.moonbit"

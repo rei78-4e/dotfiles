@@ -128,7 +128,6 @@ let
     deadnix
 
     # ===== formatter =====
-    taplo
     rustfmt
     nixfmt
     biome

@@ -100,6 +100,17 @@
         };
     in
     {
+      devShells.${linuxSystem}.default =
+        let
+          pkgs = mkPkgs linuxSystem;
+        in
+        pkgs.mkShell {
+          packages = with pkgs; [
+            lua-language-server
+            tombi
+          ];
+        };
+
       # ===== Home Manager (standalone) =====
       homeConfigurations = {
         ${userNames.standalone} = mkHome linuxSystem gitSigningKeys.desktop userNames.standalone;
