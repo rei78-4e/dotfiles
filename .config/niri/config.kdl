@@ -313,7 +313,7 @@ binds {
     Super+M { quit; }
     Super+E { spawn-sh "emacs $HOME/org"; }
     Super+V { toggle-window-floating; }
-    Super+D { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Super+D { spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"; }
     Super+C { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
     Super+Backslash { spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"; }
     Super+bracketleft { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
