@@ -24,4 +24,9 @@
   ];
 
   security.sudo.wheelNeedsPassword = true;
+
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
 }

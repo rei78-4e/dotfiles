@@ -193,6 +193,7 @@
 (setq display-line-numbers-type 'relative)
 (global-hl-line-mode 1)
 (column-number-mode 1)
+(size-indication-mode 1)
 (show-paren-mode 1)
 (global-auto-revert-mode 1)
 (delete-selection-mode 1)
@@ -918,6 +919,169 @@ identifiers."
   (add-hook 'after-make-frame-functions #'seli/diff-hl-enable-gui-margin)
   (with-eval-after-load 'magit
     (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
+
+;;; Git status in the mode line
+
+(defconst seli/git-status-categories
+  '((conflict . "!")
+    (staged . "+")
+    (modified . "~")
+    (deleted . "-")
+    (renamed . "\u00bb")
+    (untracked . "?"))
+  "Ordered Git file states and the symbols shown in the mode line.")
+
+(defconst seli/git-status-faces
+  '((conflict . doom-modeline-urgent)
+    (staged . doom-modeline-info)
+    (modified . doom-modeline-warning)
+    (deleted . doom-modeline-urgent)
+    (renamed . doom-modeline-info)
+    (untracked . doom-modeline-info))
+  "Faces used for each Git file state in the mode line.")
+
+(defvar-local seli/git-status-counts nil
+  "Per-category count of changed files in the current buffer's repository.")
+
+(defvar-local seli/git-status--process nil
+  "The Git process currently computing `seli/git-status-counts'.")
+
+(defun seli/git-status--inc (counts category)
+  "Increment the file count for CATEGORY in COUNTS."
+  (let ((cell (assq category counts)))
+    (setcdr cell (1+ (cdr cell)))))
+
+(defun seli/git-status--counts (output)
+  "Count changed files by state from `git status --porcelain' OUTPUT."
+  (let ((counts (mapcar (lambda (cell) (cons (car cell) 0))
+                        seli/git-status-categories)))
+    (dolist (line (split-string output "\n" t))
+      (when (>= (length line) 2)
+        (let ((x (aref line 0))
+              (y (aref line 1)))
+          (cond
+           ((and (eq x ??) (eq y ??))
+            (seli/git-status--inc counts 'untracked))
+           ((or (eq x ?U) (eq y ?U)
+                (and (eq x ?A) (eq y ?A))
+                (and (eq x ?D) (eq y ?D)))
+            (seli/git-status--inc counts 'conflict))
+           (t
+            (pcase x
+              ((or ?A ?M ?C ?D) (seli/git-status--inc counts 'staged))
+              (?R (seli/git-status--inc counts 'renamed)))
+            (pcase y
+              (?M (seli/git-status--inc counts 'modified))
+              (?D (seli/git-status--inc counts 'deleted))))))))
+    counts))
+
+(defun seli/git-status-refresh ()
+  "Recompute the cached Git file counts for the current buffer."
+  (when (process-live-p seli/git-status--process)
+    (delete-process seli/git-status--process))
+  (setq seli/git-status--process nil
+        seli/git-status-counts nil)
+  (when-let* ((file buffer-file-name)
+              ((not (file-remote-p file)))
+              ((locate-dominating-file file ".git")))
+    (let ((buffer (current-buffer))
+          (output ""))
+      (setq seli/git-status--process
+            (make-process
+             :name "seli-git-status"
+             :noquery t
+             :command '("git" "--no-optional-locks" "status" "--porcelain")
+             :filter (lambda (_process chunk)
+                       (setq output (concat output chunk)))
+             :sentinel (lambda (process _event)
+                         (when (and (eq (process-status process) 'exit)
+                                    (zerop (process-exit-status process))
+                                    (buffer-live-p buffer))
+                           (with-current-buffer buffer
+                             (setq seli/git-status-counts
+                                   (seli/git-status--counts output))
+                             (force-mode-line-update)))))))))
+
+(defun seli/git-status--kill ()
+  "Stop a running Git status process when its buffer is killed."
+  (when (process-live-p seli/git-status--process)
+    (delete-process seli/git-status--process)))
+
+(add-hook 'find-file-hook #'seli/git-status-refresh)
+(add-hook 'after-save-hook #'seli/git-status-refresh)
+(add-hook 'kill-buffer-hook #'seli/git-status--kill)
+(advice-add #'vc-refresh-state :after #'seli/git-status-refresh)
+
+(defconst seli/evil-state-faces
+  '((normal . doom-modeline-evil-normal-state)
+    (emacs . doom-modeline-evil-emacs-state)
+    (insert . doom-modeline-evil-insert-state)
+    (motion . doom-modeline-evil-motion-state)
+    (visual . doom-modeline-evil-visual-state)
+    (operator . doom-modeline-evil-operator-state)
+    (replace . doom-modeline-evil-replace-state))
+  "Faces used for each Evil state in the mode line.")
+
+(defconst seli/evil-state-names
+  '((normal . "NORMAL")
+    (emacs . "EMACS")
+    (insert . "INSERT")
+    (motion . "MOTION")
+    (visual . "VISUAL")
+    (operator . "OPERATOR")
+    (replace . "REPLACE"))
+  "Readable names for each Evil state, shown as text in the mode line.")
+
+(with-eval-after-load 'doom-modeline
+  (doom-modeline-def-segment git-status
+    "Displays Git file-change counts, e.g. `~8 -70'."
+    (when seli/git-status-counts
+      (let ((parts
+             (delq nil
+                   (mapcar
+                    (lambda (cell)
+                      (let* ((category (car cell))
+                             (count (cdr (assq category seli/git-status-counts))))
+                        (when (and count (> count 0))
+                          (propertize (format "%s%d" (cdr cell) count)
+                                      'face (cdr (assq category seli/git-status-faces))))))
+                    seli/git-status-categories))))
+        (when parts
+          (concat (doom-modeline-spc) (mapconcat #'identity parts " "))))))
+
+  (doom-modeline-def-segment evil-state
+    "Displays the current Evil state as text, e.g. NORMAL."
+    (when (bound-and-true-p evil-local-mode)
+      (let ((name (or (cdr (assq evil-state seli/evil-state-names))
+                      (upcase (symbol-name evil-state))))
+            (face (or (cdr (assq evil-state seli/evil-state-faces))
+                      'doom-modeline-evil-user-state)))
+        (concat (doom-modeline-spc)
+                (propertize name 'face face)
+                (doom-modeline-spc)))))
+
+  (doom-modeline-def-segment nyan
+    "Displays the Nyan cat progress indicator on its own."
+    (when (bound-and-true-p nyan-mode)
+      (concat (doom-modeline-spc) (nyan-create) (doom-modeline-spc))))
+
+  (doom-modeline-def-segment position
+    "Displays line/column and percentage without the Nyan cat."
+    (let ((nyan-mode nil))
+      (doom-modeline-segment--buffer-position)))
+
+  ;; Mode-line layout:
+  ;; left  : evil state, Git branch, changed-file counts, path
+  ;; right : lang, file size, Nyan cat, buffer position
+  (doom-modeline-def-modeline 'main
+    '(evil-state
+      vcs
+      git-status
+      buffer-info)
+    '(major-mode
+      buffer-size
+      nyan
+      position)))
 
 ;;; Files
 

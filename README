@@ -4,58 +4,27 @@
 
 NixOS, and Stand-alone for a Linux
 
-## Personal Notes
+## Standalone Home Manager
 
-Move to Fedora -> ./FEDORA-MIGRATION.md and ./FEDORA-MIGRATION-SHORT.md
-
----
-
-I DON'T MANAGE BELOW CONTENTS. Might be useful, might not.
-
-### Standalone Home Manager
-
-Set `userNames.standalone` near the top of `flake.nix` to your login name,
-clone this repository to `~/dotfiles`, and run the bootstrap
-script. It installs the Fedora-owned system layer (`fish` and `niri`), installs
-Nix when necessary, builds the flake, and activates standalone Home Manager.
+setup
 
 ```bash
-git clone https://github.com/senox78/dotfiles
+git clone https://github.com/rei78-4e/dotfiles
 cd ~/dotfiles
-./script/fedora-home-manager-bootstrap.sh
-```
 
-The repository path is intentional: the configuration derives its out-of-store
-links from `/home/<userName>/dotfiles`. NixOS usernames are configured per host
-by `userNames.desktop` and `userNames.thinkpad`. On Fedora, the bootstrap installs
-the base graphical desktop applications with `dnf` so they use Fedora's GPU and
-Wayland stack. It also installs everyday CLI tools; project-specific toolchains
-belong in Nix devShells. Use `dnf` or Flatpak for additional GUI apps. Home
-Manager keeps dotfiles reproducible. After the first run, log out and back in.
-Subsequent updates use:
+build
 
 ```bash
 home-manager switch --flake ".#$USER"
 ```
 
-To update the Fedora-owned packages independently:
+## NixOS
 
-```bash
-./script/fedora-desktop-packages.sh
-```
-
-### NixOS
-
-There are two Linux hosts, each with its own hardware config:
-
-| Host | Directory | Hostname | Notes |
-| :---: | :--- | :---: | :--- |
-| ThinkPad | `hosts/thinkpad/` | `selinoir` | AMD, fingerprint, lid/hibernate |
-| Desktop | `hosts/desktop/` | `selipaq` | Intel, LUKS swap |
+there are `hosts/desktop` and `hosts/thinkpad/`.
 
 Machine-specific settings live in the host directory; shared desktop setup lives in `modules/desktop.nix`.
 
-#### Initial Setup (per host)
+### Initial Setup (per host)
 
 Clone this repo to `~/dotfiles`, then generate and copy the hardware configuration:
 
@@ -63,10 +32,7 @@ Clone this repo to `~/dotfiles`, then generate and copy the hardware configurati
 sudo nixos-generate-config --dir /etc/nixos
 sudo cp /etc/nixos/hardware-configuration.nix ~/dotfiles/hosts/thinkpad/
 sudo cp /etc/nixos/hardware-configuration.nix ~/dotfiles/hosts/desktop/
-# pick the directory matching the machine, then commit the new UUIDs
 ```
-
-#### Apply Configuration
 
 ```bash
 cd ~/dotfiles
@@ -74,44 +40,8 @@ sudo nixos-rebuild switch --flake .#thinkpad   # on the ThinkPad
 sudo nixos-rebuild switch --flake .#desktop    # on the desktop
 ```
 
-## Structure (simple)
 
-```text
-~/dotfiles
-├── flake.nix
-├── hosts/
-│   ├── thinkpad/
-│   │   ├── configuration.nix   # selinoir (AMD, fingerprint, lid/hibernate)
-│   │   └── hardware-configuration.nix
-│   ├── desktop/
-│   │   ├── configuration.nix   # selipaq (Intel desktop)
-│   │   └── hardware-configuration.nix
-├── modules/
-│   ├── common.nix
-│   ├── desktop.nix
-│   └── thinkpad.nix
-├── home/
-│   ├── rei.nix
-│   ├── common_user.nix
-│   └── ...
-├── nvim/
-├── kitty/
-├── hypr/
-├── waybar/
-└── ...
-```
-
-- `hosts/<name>/configuration.nix`: per-machine settings (hostname, hardware-specific bits)
-- `modules/desktop.nix`: system-wide desktop infrastructure shared by all NixOS hosts (Hyprland/niri, PipeWire, portal, polkit, etc.)
-- `home/rei.nix`: personal apps and user config
-- real app config files stay in this dotfiles repo as normal files/directories
-- Home Manager deploys `~/.config/*` via `xdg.configFile` symlinks
-
-## Maintenance & Updates
-
-After making changes to your configuration files, use the following commands to apply them.
-
-### Rebuild (Apply Changes)
+## Rebuild (Apply Changes)
 
 **Standalone Linux (Debian, Ubuntu, etc.)**
 
@@ -121,17 +51,22 @@ home-manager switch --flake ".#$USER"
 ```
 
 **NixOS**
+
 ```bash
 cd ~/dotfiles
 sudo nixos-rebuild switch --flake .#thinkpad   # on the ThinkPad
 sudo nixos-rebuild switch --flake .#desktop    # on the desktop
 ```
 
-### Update Packages (Flake Inputs)
+there are `rebuild` function in fish.
+
+## Update Packages (Flake Inputs)
 
 To update the underlying packages (nixpkgs, etc.) to their latest versions:
+
 ```bash
 cd ~/dotfiles
 nix flake update
-# Then run the appropriate rebuild command above
 ```
+
+there are `update` function in fish.

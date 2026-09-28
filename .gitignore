@@ -79,3 +79,4 @@ config.local.fish
 !/.config/obs-studio/basic/profiles/*/
 /.config/obs-studio/basic/profiles/*/*
 !/.config/obs-studio/basic/profiles/*/basic.ini
+.config/opencode/service.json
