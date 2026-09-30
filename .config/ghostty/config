@@ -11,9 +11,9 @@ background-opacity = 1
 background-blur-radius = 40
 
 theme = rose-pine-moon
-# foreground = #ffffff
+foreground = #ffffff
 
-window-theme = auto
+window-theme = dark
 
 cursor-style-blink = true
 

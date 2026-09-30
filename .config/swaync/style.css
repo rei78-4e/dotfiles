@@ -1,182 +1,167 @@
-@import "colors.css";
-
+/* Rosé Pine Moon, matched to the current Waybar theme. */
 :root {
-  --cc-bg: #f1eee5;
-  --noti-border-color: #b7b0a2;
-  --noti-bg: 251, 249, 242;
-  --noti-bg-alpha: 1;
-  --noti-bg-darker: #f1eee5;
-  --noti-bg-hover: #ead2d9;
-  --noti-bg-focus: #ead2d9;
-  --noti-close-bg: transparent;
-  --noti-close-bg-hover: #ead2d9;
-  --text-color: #2d302b;
-  --text-color-disabled: #77766d;
-  --bg-selected: #d38ca0;
-  --border: 1px solid #b7b0a2;
-  --border-radius: 0;
-  --notification-shadow: none;
-  --mpris-album-art-overlay: #fbf9f2;
-  --mpris-button-hover: #ead2d9;
-  --mpris-album-art-shadow: none;
+	--cc-bg: #232136;
+	--noti-border-color: #44415a;
+	--noti-bg: 42, 39, 63;
+	--noti-bg-alpha: 0.94;
+	--noti-bg-darker: #232136;
+	--noti-bg-hover: #393552;
+	--noti-bg-focus: #393552;
+	--noti-close-bg: transparent;
+	--noti-close-bg-hover: rgba(235, 111, 146, 0.2);
+	--text-color: #e0def4;
+	--text-color-disabled: #6e6a86;
+	--bg-selected: #c4a7e7;
+	--border: 1px solid #44415a;
+	--border-radius: 0;
+	--notification-shadow: none;
+	--mpris-album-art-overlay: #2a273f;
+	--mpris-button-hover: #393552;
+	--mpris-album-art-shadow: none;
 }
 
 * {
-  font-family:
-    "Annotation Mono",
-    "0xProto Nerd Font Mono",
-    "0xProto Nerd Font",
-    "Noto Sans CJK JP",
-    sans-serif;
-  color: @ink;
-  font-size: 13px;
-  font-weight: 600;
-  min-height: 0;
+	font-family:
+		"Monaspace Radon Var", "Symbols Nerd Font", "Noto Sans CJK JP", sans-serif;
+	color: #e0def4;
+	font-size: 13px;
+	font-weight: 600;
+	min-height: 0;
 }
 
 .notification {
-  background-color: @paper-light;
-  border: 1px solid @rule;
-  border-radius: 0;
-  box-shadow: none;
-  color: @ink;
-  margin: 8px;
-  padding: 12px;
+	background-color: rgba(42, 39, 63, 0.94);
+	border: 1px solid #44415a;
+	border-radius: 0;
+	box-shadow: none;
+	color: #e0def4;
+	margin: 8px;
+	padding: 12px;
 }
 
 .notification.critical {
-  border-color: @warning;
+	border-color: #eb6f92;
 }
-
 .notification.low {
-  border-color: @rule-soft;
+	border-color: #9ccfd8;
 }
-
-/* SwayNC's upstream .image rule uses a 100px radius for notification previews. */
-.notification-row .notification-background .notification .notification-default-action .notification-content .image,
-.notification-row .notification-background .notification .notification-default-action .notification-content .body-image {
-  border-radius: 0;
+.notification-row
+	.notification-background
+	.notification
+	.notification-default-action
+	.notification-content
+	.image,
+.notification-row
+	.notification-background
+	.notification
+	.notification-default-action
+	.notification-content
+	.body-image {
+	border-radius: 0;
 }
-
 .summary {
-  color: @ink;
-  font-size: 14px;
-  font-weight: 800;
+	color: #c4a7e7;
+	font-size: 14px;
+	font-weight: 800;
 }
-
 .body {
-  color: @ink;
-  margin-top: 4px;
+	color: #e0def4;
+	margin-top: 4px;
 }
-
 .time {
-  color: @ink-muted;
-  font-size: 11px;
+	color: #908caa;
+	font-size: 11px;
 }
 
 .close-button {
-  background-color: transparent;
-  background-image: none;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  color: @ink-muted;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	color: #908caa;
 }
-
 .close-button:hover {
-  background-color: @rose-wash;
-  color: @ink;
+	background: rgba(235, 111, 146, 0.2);
+	color: #eb6f92;
 }
 
 .control-center {
-  background-color: @paper;
-  border: 1px solid @rule;
-  border-radius: 0;
-  box-shadow: none;
-  color: @ink;
-  margin: 10px;
-  padding: 16px;
+	background-color: rgba(35, 33, 54, 0.96);
+	border: 1px solid #44415a;
+	border-radius: 0;
+	box-shadow: none;
+	color: #e0def4;
+	margin: 10px;
+	padding: 16px;
 }
-
 .control-center-list {
-  background-color: transparent;
+	background: transparent;
 }
-
 .widget-title {
-  color: @ink;
-  font-size: 18px;
-  font-weight: 800;
-  margin: 8px;
+	color: #c4a7e7;
+	font-size: 18px;
+	font-weight: 800;
+	margin: 8px;
 }
 
 .widget-title > button,
 button {
-  background-color: transparent;
-  background-image: none;
-  border: 1px solid @rule;
-  border-radius: 0;
-  box-shadow: none;
-  color: @ink;
-  padding: 6px 12px;
+	background: rgba(42, 39, 63, 0.72);
+	border: 1px solid #44415a;
+	border-radius: 0;
+	box-shadow: none;
+	color: #e0def4;
+	padding: 6px 12px;
 }
-
 .widget-title > button:hover,
 button:hover {
-  background-color: @rose-wash;
-  border-color: @rose;
-  color: @ink;
+	background: #393552;
+	border-color: #c4a7e7;
+	color: #c4a7e7;
 }
 
 .widget-dnd {
-  color: @ink;
-  font-size: 14px;
-  margin: 8px;
+	color: #9ccfd8;
+	font-size: 14px;
+	margin: 8px;
 }
-
 .widget-dnd > switch {
-  background-color: @paper-light;
-  border: 1px solid @rule;
-  border-radius: 0;
-  box-shadow: none;
+	background: #2a273f;
+	border: 1px solid #44415a;
+	border-radius: 0;
+	box-shadow: none;
 }
-
 .widget-dnd > switch:checked {
-  background-color: @rose;
-  border-color: @rose;
+	background: #9ccfd8;
+	border-color: #9ccfd8;
 }
-
 .widget-dnd > switch slider {
-  background-color: @paper-light;
-  border: 1px solid @rule;
-  border-radius: 0;
-  box-shadow: none;
-  min-height: 18px;
-  min-width: 18px;
+	background: #e0def4;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	min-height: 18px;
+	min-width: 18px;
 }
-
 .widget-label > label {
-  color: @ink-muted;
-  font-size: 12px;
+	color: #908caa;
+	font-size: 12px;
 }
 
-/* Override SwayNC's album-art card: no blur, black overlay, or shadow. */
 .widget-mpris .widget-mpris-player {
-  background-color: @paper-light;
-  border: 1px solid @rule;
-  border-radius: 0;
-  box-shadow: none;
+	background: #2a273f;
+	border: 1px solid #44415a;
+	border-radius: 0;
+	box-shadow: none;
 }
-
 .widget-mpris .widget-mpris-player .mpris-background {
-  filter: none;
+	filter: none;
 }
-
 .widget-mpris .widget-mpris-player .mpris-overlay {
-  background-color: @paper-light;
-  color: @ink;
+	background: #2a273f;
+	color: #e0def4;
 }
-
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
-  border-radius: 0;
-  box-shadow: none;
+	border-radius: 0;
+	box-shadow: none;
 }

@@ -2,25 +2,24 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 let
   secretService = pkgs.writeShellScript "session-secret-service" ''
-    case ":''${XDG_CURRENT_DESKTOP:-}:" in
-      *:niri:*)
-        # Complete PAM startup before D-Bus can launch another daemon.
-        ${pkgs.systemd}/bin/systemctl --user start niri-kwallet.service
-        exec ${pkgs.kdePackages.kwallet}/bin/ksecretd
-        ;;
-      *)
-        exec /run/wrappers/bin/gnome-keyring-daemon --start --foreground --components=secrets
-        ;;
-    esac
+    exec /run/wrappers/bin/gnome-keyring-daemon --start --foreground --components=secrets
   '';
 
   waybarLaunch = pkgs.writeShellScript "waybar-launch" ''
     set -eu
     BASE="$HOME/dotfiles/.config/waybar"
+
+    ${pkgs.awww}/bin/awww-daemon &
+    for _ in $(seq 1 50); do
+      ${pkgs.awww}/bin/awww query >/dev/null 2>&1 && break
+      sleep 0.1
+    done
+
     case "''${XDG_CURRENT_DESKTOP:-}" in
       niri)
         exec ${pkgs.waybar}/bin/waybar -c "$BASE/config.niri.jsonc" -s "$BASE/style.css"
@@ -129,15 +128,24 @@ let
   '';
 in
 {
+  imports = [ inputs.vicinae.nixosModules.default ];
+
+  # Vicinae's input server needs a privileged wrapper for clipboard/emoji
+  # pasting and snippets; the launcher itself is installed per-user via the
+  # home-manager module in home/common_user.nix.
+  programs.vicinae.input-server.enable = true;
+
+  nix.settings = {
+    trusted-substituters = [ "https://vicinae.cachix.org" ];
+    trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
+  };
+
   # ===== desktop base (entire system) =====
   services.desktopManager.gnome.enable = true;
-  services.desktopManager.plasma6.enable = true;
   services.displayManager.defaultSession = "niri";
   programs.ssh.askPassword = "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
   programs.niri.enable = true;
-  # Secret Service activation must select the same wallet as the session.
-  # PAM starts GNOME Keyring with --login (initialization is deferred); keep
-  # that password handoff for GNOME, but do not initialize it under niri.
+  # Use GNOME Keyring as Secret Service in both GNOME and niri sessions.
   home-manager.sharedModules = [
     {
       xdg.dataFile."dbus-1/services/org.freedesktop.secrets.service".text = ''
@@ -145,41 +153,25 @@ in
         Name=org.freedesktop.secrets
         Exec=${secretService}
       '';
-      xdg.configFile = lib.genAttrs
-        [ "autostart/gnome-keyring-secrets.desktop" "autostart/gnome-keyring-pkcs11.desktop" ]
-        (name: {
-          text = ''
-            [Desktop Entry]
-            Type=Application
-            Name=GNOME Keyring
-            Exec=/run/wrappers/bin/gnome-keyring-daemon --start --components=${if lib.hasInfix "pkcs11" name then "pkcs11" else "secrets"}
-            NotShowIn=niri;
-            NoDisplay=true
-            X-GNOME-Autostart-Phase=PreDisplayServer
-            X-GNOME-AutoRestart=false
-            X-GNOME-Autostart-Notify=true
-          '';
-        });
+      xdg.configFile =
+        lib.genAttrs [ "autostart/gnome-keyring-secrets.desktop" "autostart/gnome-keyring-pkcs11.desktop" ]
+          (name: {
+            text = ''
+              [Desktop Entry]
+              Type=Application
+              Name=GNOME Keyring
+              Exec=/run/wrappers/bin/gnome-keyring-daemon --start --components=${
+                if lib.hasInfix "pkcs11" name then "pkcs11" else "secrets"
+              }
+              NoDisplay=true
+              X-GNOME-Autostart-Phase=PreDisplayServer
+              X-GNOME-AutoRestart=false
+              X-GNOME-Autostart-Notify=true
+            '';
+          });
     }
   ];
-  # niri-session imports PAM's environment; this helper passes the ready
-  # Wayland session environment to the KWallet daemon started by PAM.
-  security.pam.services.login.kwallet.enable = true;
-  systemd.user.services.niri-kwallet = {
-    description = "Unlock KWallet in niri using the login password";
-    unitConfig = {
-      ConditionEnvironment = "XDG_CURRENT_DESKTOP=niri";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
-    };
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.kdePackages.kwallet-pam}/libexec/pam_kwallet_init";
-      RemainAfterExit = true;
-    };
-    wantedBy = [ "graphical-session.target" ];
-  };
-  xdg.portal.config.niri."org.freedesktop.impl.portal.Secret" = lib.mkForce "kwallet";
+  xdg.portal.config.niri."org.freedesktop.impl.portal.Secret" = lib.mkForce "gnome-keyring";
   programs.hyprlock.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -353,6 +345,7 @@ in
   };
 
   environment.systemPackages = with pkgs; [
+    awww
     brightnessctl
     jq
     waybar

@@ -1,95 +1,15 @@
 // Hyprland-parity niri config (niri 26.04+)
 // https://github.com/niri-wm/niri/wiki/Configuration:-Introduction
 
-environment {
-    MOZ_ENABLE_WAYLAND "1"
-    // GDK_BACKEND must NOT be set globally here: it propagates to
-    // xdg-desktop-portal-gnome via dbus-update-activation-environment and
-    // breaks its display-server compatibility check, disabling ScreenCast
-    // ("Non-compatible display server, exposing settings only").
-    // https://github.com/niri-wm/niri/wiki/Important-Software
-    QT_QPA_PLATFORM "wayland;xcb"
-    QT_QPA_PLATFORMTHEME "qt6ct"
-    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
-    SDL_VIDEODRIVER "wayland"
-    CLUTTER_BACKEND "Wayland"
-    XCURSOR_THEME "Bibata-Modern-Ice"
-    XCURSOR_SIZE "20"
-    ELECTRON_OZONE_PLATFORM_HINT "wayland"
-    XDG_CURRENT_DESKTOP "niri"
-    XDG_SESSION_TYPE "wayland"
-    XDG_SESSION_DESKTOP "niri"
-    GTK_USE_PORTAL "1"
-}
-
-prefer-no-csd
-
-screenshot-path "~/Desktop/ScreenShot_%Y-%m-%d_at_%H_%M_%S.png"
-
-overview {
-  zoom 0.48
-  backdrop-color "#777"
-}
-
-layer-rule {
-    match namespace="^noctalia-backdrop"
-    place-within-backdrop true
-}
-
-cursor {
-    xcursor-theme "Bibata-Modern-Ice"
-    xcursor-size 24
-}
-
-hotkey-overlay {
-    skip-at-startup
-}
-
-gestures {
-    hot-corners {
-        off
-    }
-}
-
 spawn-sh-at-startup "dbus-update-activation-environment --systemd --all"
-
 spawn-sh-at-startup "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP NIRI_SOCKET"
 spawn-sh-at-startup "systemctl --user restart xdg-desktop-portal.service"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
 
-input {
-//    focus-follows-mouse
-
-    keyboard {
-        xkb {
-            layout "us"
-            options "caps:super"
-        }
-        repeat-delay 230
-        repeat-rate 42
-    }
-
-    touchpad {
-        tap
-        natural-scroll
-        accel-speed 0.4
-        scroll-factor 0.5
-    }
-
-    mouse {
-        natural-scroll
-    }
-
-    trackpoint {
-        accel-speed 0.2
-        natural-scroll
-    }
-}
-
 output "DP-1" {
     mode "3840x2160"
-    scale 1.25
+    scale 1.5
     position x=0 y=0
 }
 
@@ -117,21 +37,113 @@ output "Dell Inc. DELL P2214H 3JY1P45C3CUL" {
     position x=-1280 y=-1080
 }
 
+environment {
+    MOZ_ENABLE_WAYLAND "1"
+    // GDK_BACKEND must NOT be set globally here: it propagates to
+    // xdg-desktop-portal-gnome via dbus-update-activation-environment and
+    // breaks its display-server compatibility check, disabling ScreenCast
+    // ("Non-compatible display server, exposing settings only").
+    // https://github.com/niri-wm/niri/wiki/Important-Software
+    QT_QPA_PLATFORM "wayland;xcb"
+    QT_QPA_PLATFORMTHEME "qt6ct"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+    SDL_VIDEODRIVER "wayland"
+    CLUTTER_BACKEND "Wayland"
+    XCURSOR_THEME "Bibata-Modern-Ice"
+    XCURSOR_SIZE "20"
+    ELECTRON_OZONE_PLATFORM_HINT "wayland"
+    XDG_CURRENT_DESKTOP "niri"
+    XDG_SESSION_TYPE "wayland"
+    XDG_SESSION_DESKTOP "niri"
+    GTK_USE_PORTAL "1"
+}
+
+prefer-no-csd
+
+screenshot-path "~/Desktop/ScreenShot_%Y-%m-%d_at_%H_%M_%S.png"
+
+overview {
+    zoom 0.48
+    backdrop-color "#777"
+}
+
+layer-rule {
+    match namespace="^noctalia-backdrop"
+    place-within-backdrop true
+}
+layer-rule {
+    match namespace="^noctalia-bar-default$"
+    background-effect {
+        blur true
+        xray true
+    }
+}
+layer-rule {
+    match namespace="^waybar$"
+    background-effect {
+        blur true
+        xray true
+    }
+}
+cursor {
+    xcursor-theme "Bibata-Modern-Ice"
+    xcursor-size 24
+}
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+gestures {
+    hot-corners {
+        top-left
+    }
+}
+
+input {
+    //    focus-follows-mouse
+    keyboard {
+        xkb {
+            layout "us"
+            options "caps:super"
+        }
+        repeat-delay 230
+        repeat-rate 42
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+        accel-speed 0.4
+        scroll-factor 0.5
+    }
+
+    mouse {
+        natural-scroll
+    }
+
+    trackpoint {
+        accel-speed 0.2
+        natural-scroll
+    }
+}
+
+
 layout {
-    gaps 5
+    gaps 4
     background-color "transparent"
 
     struts {
-        left 5
-        right 5
+        left 3
+        right 3
         top 1
         bottom 4
     }
 
     center-focused-column "never"
-    default-column-width { proportion 0.5; }
-
-    // Super+R / Super+Shift+R でこの候補を順に切り替え
+    default-column-width {
+        proportion 0.5
+    }
     preset-column-widths {
         proportion 0.25
         proportion 0.33333
@@ -146,7 +158,7 @@ layout {
 
     border {
         on
-        width 4
+        width 3
         active-color "#d38ca0"
         inactive-color "#989286"
         urgent-color "#a84435"
@@ -162,247 +174,368 @@ animations {
     workspace-switch {
         spring damping-ratio=1.0 stiffness=650 epsilon=0.0001
     }
-
     window-open {
         duration-ms 200
         curve "ease-out-expo"
     }
-
     window-close {
         duration-ms 140
         curve "ease-out-cubic"
     }
-
     horizontal-view-movement {
         spring damping-ratio=1.0 stiffness=650 epsilon=0.0001
     }
-
     window-movement {
         spring damping-ratio=1.0 stiffness=650 epsilon=0.0001
     }
-
     window-resize {
         spring damping-ratio=1.0 stiffness=650 epsilon=0.0001
     }
-
     overview-open-close {
         spring damping-ratio=1.0 stiffness=550 epsilon=0.0001
     }
-
     config-notification-open-close {
         spring damping-ratio=1.0 stiffness=850 epsilon=0.001
     }
-
     exit-confirmation-open-close {
         spring damping-ratio=1.0 stiffness=600 epsilon=0.01
     }
-
     screenshot-ui-open {
         duration-ms 160
         curve "ease-out-cubic"
     }
-
     recent-windows-close {
         spring damping-ratio=1.0 stiffness=650 epsilon=0.001
     }
 }
-
 window-rule {
     match app-id="dev.float"
     open-floating true
-    default-column-width { proportion 0.75; }
-    default-window-height { proportion 0.9; }
+    default-column-width {
+        proportion 0.75
+    }
+    default-window-height {
+        proportion 0.9
+    }
 }
-
 window-rule {
-    geometry-corner-radius 10
+    geometry-corner-radius 0
     clip-to-geometry true
 }
-
 blur {
     on
     passes 4
     offset 2
     noise 0
 }
-
 // Blur translucent terminal and Emacs surfaces; other windows remain opaque.
 window-rule {
-    match app-id=r#"^(neovide|kitty|scratchpad-kitty|com\.mitchellh\.ghostty|emacs)$"#
+    match app-id="^(neovide|kitty|scratchpad-kitty|com\\.mitchellh\\.ghostty|emacs)$"
     background-effect {
         blur true
     }
 }
-
 // Only the specially titled Emacs frame is toggled by niri-scratchpad.
 window-rule {
     match title="Scratchpad Emacs"
     open-floating true
 }
-
 // Dedicated Kitty toggled by Super+Backslash.
 window-rule {
     match app-id="scratchpad-kitty"
     open-floating true
-    default-column-width { proportion 0.333333; }
-    default-window-height { proportion 0.6; }
+    default-column-width {
+        proportion 0.333333
+    }
+    default-window-height {
+        proportion 0.6
+    }
 }
-
 // PiP remains opaque so the floating window follows Paper Design too.
 window-rule {
     match title="^Picture in picture$" is-focused=false
-
     open-floating true
-
-    default-column-width { fixed 240; }
-    default-window-height { fixed 135; }
-
-    default-floating-position x=20 y=20 relative-to="top-right"
-
-    opacity 1.0
-
-    draw-border-with-background false
-
-    border {
-      off
+    default-column-width {
+        fixed 240
     }
-
+    default-window-height {
+        fixed 135
+    }
+    default-floating-position x=20 y=20 relative-to="top-right"
+    opacity 1.0
+    draw-border-with-background false
+    border {
+        off
+    }
     background-effect {
         blur false
         xray false
     }
 }
-
 // PiP: focused
 window-rule {
     match title="^Picture in picture$" is-focused=true
-
     open-floating true
-
-    default-column-width { fixed 240; }
-    default-window-height { fixed 135; }
-
-    default-floating-position x=20 y=20 relative-to="top-right"
-
-    opacity 1.0
-
-    draw-border-with-background false
-
-    border {
-      off
+    default-column-width {
+        fixed 240
     }
-
+    default-window-height {
+        fixed 135
+    }
+    default-floating-position x=20 y=20 relative-to="top-right"
+    opacity 1.0
+    draw-border-with-background false
+    border {
+        off
+    }
     background-effect {
         blur false
         xray false
     }
 }
+workspace "stash" {
 
-workspace "stash" { }
-
+}
 workspace "chats" {
     open-on-output "DP-1"
 }
 
 binds {
-    Super+S { focus-workspace "chats"; }
-    Super+Shift+S { move-window-to-workspace "chats"; }
-
-    Super+Q repeat=false { close-window; }
-    Super+T { spawn "kitty"; }
-    Super+M { quit; }
-    Super+E { spawn-sh "emacs $HOME/org"; }
-    Super+V { toggle-window-floating; }
-    Super+D { spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"; }
-    Super+C { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
-    Super+Backslash { spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"; }
-    Super+bracketleft { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
-    Super+bracketright { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
-    Super+Shift+D { spawn-sh "$HOME/dotfiles/script/niri_views.sh"; }
-    Super+F { maximize-column; }
-    Super+Shift+F { fullscreen-window; }
-    Super+O repeat=false { toggle-overview; }
-    Super+Alt+Z repeat=false { spawn "wooz" "--zoom-in" "50%" "--mouse-track"; }
-    Super+Shift+V { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
-
+    Super+S {
+        focus-workspace "chats"
+    }
+    Super+Shift+S {
+        move-window-to-workspace "chats"
+    }
+    Super+Backslash {
+        spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"
+    }
+    Super+bracketleft {
+        spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"
+    }
+    Super+bracketright {
+        spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"
+    }
+    Super+D {
+        spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"
+    }
+    Super+C {
+        spawn-sh "$HOME/dotfiles/script/open_notification.sh"
+    }
+    Super+Shift+V {
+        spawn-sh "$HOME/dotfiles/script/cliphist_gui.sh"
+    }
+    Super+E {
+        spawn-sh "emacs $HOME/org"
+    }
+    Super+Shift+D {
+        spawn-sh "$HOME/dotfiles/script/niri_views.sh"
+    }
+    Super+Q repeat=false {
+        close-window
+    }
+    Super+T {
+        spawn "kitty"
+    }
+    Super+M {
+        quit
+    }
+    Super+V {
+        toggle-window-floating
+    }
+    Super+F {
+        maximize-column
+    }
+    Super+Ctrl+F {
+        fullscreen-window
+    }
+    Super+O repeat=false {
+        toggle-overview
+    }
+    Super+Alt+Z repeat=false {
+        spawn "wooz" "--zoom-in" "50%" "--mouse-track"
+    }
     // --- focus ---
-    Super+Left { focus-column-left; }
-    Super+Right { focus-column-right; }
-    Super+Up { focus-window-up; }
-    Super+Down { focus-window-down; }
-    Super+J { focus-workspace-down; }
-    Super+K { focus-workspace-up; }
-    Super+H { focus-column-left; }
-    Super+L { focus-column-right; }
-    Super+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
-    Super+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
-
+    Super+Left {
+        focus-column-left
+    }
+    Super+Right {
+        focus-column-right
+    }
+    Super+Up {
+        focus-window-up
+    }
+    Super+Down {
+        focus-window-down
+    }
+    Super+J {
+        focus-workspace-down
+    }
+    Super+K {
+        focus-workspace-up
+    }
+    Super+H {
+        focus-column-left
+    }
+    Super+L {
+        focus-column-right
+    }
+    Super+WheelScrollDown cooldown-ms=150 {
+        focus-workspace-down
+    }
+    Super+WheelScrollUp cooldown-ms=150 {
+        focus-workspace-up
+    }
     // --- monitors (stacked vertically: DP-1 top, eDP-1 bottom) ---
-    Super+Ctrl+J { focus-monitor-down; }
-    Super+Ctrl+K { focus-monitor-up; }
-    Super+Ctrl+L { focus-monitor-right; }
-    Super+Ctrl+H { focus-monitor-left; }
-    Super+Ctrl+Home { move-column-to-first; }
-    Super+Ctrl+End { move-column-to-last; }
-
-    Super+1 { focus-workspace 1; }
-    Super+2 { focus-workspace 2; }
-    Super+3 { focus-workspace 3; }
-    Super+4 { focus-workspace 4; }
-    Super+5 { focus-workspace 5; }
-    Super+6 { focus-workspace 6; }
-    Super+7 { focus-workspace 7; }
-    Super+8 { focus-workspace 8; }
-    Super+9 { focus-workspace 9; }
-    Super+0 { focus-workspace 10; }
-
+    Super+Ctrl+J {
+        focus-monitor-down
+    }
+    Super+Ctrl+K {
+        focus-monitor-up
+    }
+    Super+Ctrl+L {
+        focus-monitor-right
+    }
+    Super+Ctrl+H {
+        focus-monitor-left
+    }
+    Super+Ctrl+Home {
+        move-column-to-first
+    }
+    Super+Ctrl+End {
+        move-column-to-last
+    }
+    Super+1 {
+        focus-workspace 1
+    }
+    Super+2 {
+        focus-workspace 2
+    }
+    Super+3 {
+        focus-workspace 3
+    }
+    Super+4 {
+        focus-workspace 4
+    }
+    Super+5 {
+        focus-workspace 5
+    }
+    Super+6 {
+        focus-workspace 6
+    }
+    Super+7 {
+        focus-workspace 7
+    }
+    Super+8 {
+        focus-workspace 8
+    }
+    Super+9 {
+        focus-workspace 9
+    }
+    Super+0 {
+        focus-workspace 10
+    }
     // --- moves ---
-    Super+Shift+J { move-window-to-workspace-down; }
-    Super+Shift+K { move-window-to-workspace-up; }
-    Super+Shift+H { swap-window-left; }
-    Super+Shift+L { swap-window-right; }
-
-    Super+Shift+1 { move-window-to-workspace 1; }
-    Super+Shift+2 { move-window-to-workspace 2; }
-    Super+Shift+3 { move-window-to-workspace 3; }
-    Super+Shift+4 { move-window-to-workspace 4; }
-    Super+Shift+5 { move-window-to-workspace 5; }
-    Super+Shift+6 { move-window-to-workspace 6; }
-    Super+Shift+7 { move-window-to-workspace 7; }
-    Super+Shift+8 { move-window-to-workspace 8; }
-    Super+Shift+9 { move-window-to-workspace 9; }
-    Super+Shift+0 { move-window-to-workspace 10; }
-    Super+Shift+M { spawn-sh "$HOME/dotfiles/script/move_to_display.sh"; }
-
-    Super+Shift+Ctrl+J { move-window-to-monitor-down; }
-    Super+Shift+Ctrl+K { move-window-to-monitor-up; }
-    Super+Shift+Ctrl+L { move-window-to-monitor-right; }
-    Super+Shift+Ctrl+H { move-window-to-monitor-left; }
-
-
+    Super+Shift+J {
+        move-window-to-workspace-down
+    }
+    Super+Shift+K {
+        move-window-to-workspace-up
+    }
+    Super+Shift+H {
+        swap-window-left
+    }
+    Super+Shift+L {
+        swap-window-right
+    }
+    Super+Shift+1 {
+        move-window-to-workspace 1
+    }
+    Super+Shift+2 {
+        move-window-to-workspace 2
+    }
+    Super+Shift+3 {
+        move-window-to-workspace 3
+    }
+    Super+Shift+4 {
+        move-window-to-workspace 4
+    }
+    Super+Shift+5 {
+        move-window-to-workspace 5
+    }
+    Super+Shift+6 {
+        move-window-to-workspace 6
+    }
+    Super+Shift+7 {
+        move-window-to-workspace 7
+    }
+    Super+Shift+8 {
+        move-window-to-workspace 8
+    }
+    Super+Shift+9 {
+        move-window-to-workspace 9
+    }
+    Super+Shift+0 {
+        move-window-to-workspace 10
+    }
+    Super+Shift+M {
+        spawn-sh "$HOME/dotfiles/script/move_to_display.sh"
+    }
+    Super+Shift+Ctrl+J {
+        move-window-to-monitor-down
+    }
+    Super+Shift+Ctrl+K {
+        move-window-to-monitor-up
+    }
+    Super+Shift+Ctrl+L {
+        move-window-to-monitor-right
+    }
+    Super+Shift+Ctrl+H {
+        move-window-to-monitor-left
+    }
     // resize
-    Super+R { switch-preset-column-width; }
-    Super+Shift+R { switch-preset-column-width-back; }
-
-    Alt+Shift+H repeat=true { set-column-width "-10"; }
-    Alt+Shift+L repeat=true { set-column-width "10"; }
-    Super+Ctrl+R repeat=false { reset-window-height; }
-
+    Super+R {
+        switch-preset-column-width
+    }
+    Super+Shift+R {
+        switch-preset-column-width-back
+    }
+    Alt+Shift+H repeat=true {
+        set-column-width "-10"
+    }
+    Alt+Shift+L repeat=true {
+        set-column-width "10"
+    }
+    Super+Ctrl+R repeat=false {
+        reset-window-height
+    }
     // --- screenshots (native niri) ---
-    Super+P repeat=false { screenshot-window; }
-    Ctrl+Shift+S repeat=false { screenshot; }
-
+    Super+P repeat=false {
+        screenshot-window
+    }
+    Ctrl+Shift+S repeat=false {
+        screenshot
+    }
     // --- utilities ---
-    Super+Shift+P { spawn-sh "$HOME/dotfiles/script/cmd_p.py"; }
-    Super+Shift+E { spawn-sh "$HOME/dotfiles/script/logout.py"; }
-
-    XF86ScreenSaver { spawn-sh "loginctl lock-session"; }
-
+    Super+Shift+P {
+        spawn-sh "$HOME/dotfiles/script/cmd_p.py"
+    }
+    Super+Shift+E {
+        spawn-sh "$HOME/dotfiles/script/logout.py"
+    }
+    XF86ScreenSaver {
+        spawn-sh "loginctl lock-session"
+    }
     // --- wallpapers ---
-    Super+W { spawn "noctalia" "msg" "wallpaper-next"; }
-    Super+Shift+W { spawn "noctalia" "msg" "wallpaper-previous"; }
-    Alt+W { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
-
+    Super+W {
+        spawn "noctalia" "msg" "wallpaper-next"
+    }
+    Super+Shift+W {
+        spawn "noctalia" "msg" "wallpaper-previous"
+    }
+    Alt+W {
+        spawn-sh "$HOME/dotfiles/script/change_wallpaper.sh"
+    }
     // --- media / brightness ---
     XF86AudioRaiseVolume allow-when-locked=true repeat=true {
         spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"
@@ -422,15 +555,30 @@ binds {
     XF86MonBrightnessDown allow-when-locked=true repeat=true {
         spawn "brightnessctl" "-e4" "-n2" "set" "3%-"
     }
-    XF86AudioNext allow-when-locked=true { spawn "playerctl" "next"; }
-    XF86AudioPlay allow-when-locked=true { spawn "playerctl" "play-pause"; }
-    XF86AudioPrev allow-when-locked=true { spawn "playerctl" "previous"; }
-    XF86Favorites allow-when-locked=true { spawn "playerctl" "play-pause"; }
-
+    XF86AudioNext allow-when-locked=true {
+        spawn "playerctl" "next"
+    }
+    XF86AudioPlay allow-when-locked=true {
+        spawn "playerctl" "play-pause"
+    }
+    XF86AudioPrev allow-when-locked=true {
+        spawn "playerctl" "previous"
+    }
+    XF86Favorites allow-when-locked=true {
+        spawn "playerctl" "play-pause"
+    }
     // horizontal scroll (match hypr Alt+J/K)
-    Alt+P repeat=true { spawn "playerctl" "play-pause"; }
-    Alt+Equal repeat=true { spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"; }
-    Alt+Minus repeat=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"; }
-
-    Super+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Alt+P repeat=true {
+        spawn "playerctl" "play-pause"
+    }
+    Alt+Equal repeat=true {
+        spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"
+    }
+    Alt+Minus repeat=true {
+        spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"
+    }
+    Super+Escape allow-inhibiting=false {
+        toggle-keyboard-shortcuts-inhibit
+    }
 }
+

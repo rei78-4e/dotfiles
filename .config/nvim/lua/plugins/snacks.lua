@@ -28,6 +28,13 @@ return {
         ui_select = true,
         hidden = true,
         ignored = false,
+        layout = {
+          layout = {
+            height = 0.95,
+            width = 0.7,
+            min_width = 140,
+          },
+        },
         sources = {
           files = {
             cmd = "fd",

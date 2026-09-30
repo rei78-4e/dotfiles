@@ -7,5 +7,5 @@ lscpu -J | jq -r '
       | split("(R)") | join("")
       | split("(TM)") | join("")
     ) as $model
-  | "\($model) (\($cpu["CPU(s):"])) @ \($cpu["CPU max MHz:"] | tonumber / 1000) GHz"
+  | "\($model) (\($cpu["CPU(s):"]))"
 '

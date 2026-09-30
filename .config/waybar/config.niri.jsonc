@@ -2,15 +2,17 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 32,
+  "height": 36,
   "spacing": 0,
   "modules-left": [
+    "custom/launcher",
     "niri/workspaces",
     "custom/niri-windows",
     "custom/niri-ratio"
   ],
   "modules-center": ["mpris", "clock"],
   "modules-right": [
+    "memory",
     "temperature",
     "pulseaudio",
     "bluetooth",
@@ -21,6 +23,12 @@
     "tray",
     "custom/notification"
   ],
+
+  "custom/launcher": {
+    "format": "󰧶 ",
+    "on-click": "~/dotfiles/script/launch_launcher.sh",
+  },
+
   "niri/workspaces": {
     "format": "{value}",
     "on-click": "activate",
@@ -37,6 +45,7 @@
     "exec": "~/dotfiles/.config/waybar/scripts/niri-ws-windows.sh",
     "return-type": "json",
     "escape": false,
+    "max-length": 42,
     "tooltip": true
   },
   "custom/niri-ratio": {
@@ -66,7 +75,7 @@
   "mpris": {
     "format": "󰎆 {artist} - {title}",
     "format-paused": "󰏤 <i>{artist} / {title}</i>",
-    "max-length": 50,
+    "max-length": 42,
     "player-icons": {
       "default": "󰎆"
     }
@@ -78,11 +87,17 @@
       "mode": "month",
       "on-scroll": 1,
       "format": {
-        "months": "<span color='#d38ca0'><b>{}</b></span>",
-        "days": "<span color='#2d302b'>{}</span>",
-        "today": "<span color='#fbf9f2' background='#d38ca0'><b>{}</b></span>"
+        "months": "<span color='#c4a7e7'><b>{}</b></span>",
+        "days": "<span color='#e0def4'>{}</span>",
+        "today": "<span color='#232136' background='#c4a7e7'><b>{}</b></span>"
       }
     }
+  },
+  "memory": {
+    "format": " {percentage}%",
+    "tooltip-format": "RAM: {used:0.1f}GiB / {total:0.1f}GiB\nSwap: {swapUsed:0.1f}GiB / {swapTotal:0.1f}GiB",
+    "interval": 5,
+    "on-click": "kitty --class=dev.float -e /etc/profiles/per-user/$USER/bin/btop"
   },
   "temperature": {
     "critical-threshold": 80,

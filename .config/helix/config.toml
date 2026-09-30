@@ -2,7 +2,6 @@
 light = "rose_pine_dawn"
 dark = "rose_pine_moon"
 
-
 [editor]
 auto-info = true
 bufferline = "always"
@@ -55,7 +54,7 @@ tabpad = "·"
 
 [editor.indent-guides]
 render = true
-character = "|"
+character = "│"
 skip-levels = 1
 
 [editor.soft-wrap]

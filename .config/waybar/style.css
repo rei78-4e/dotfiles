@@ -1,152 +1,173 @@
-/* Quiet uncoated-paper Waybar theme. */
+/* Rosé Pine Moon: one quiet, translucent bar with clear status accents. */
 * {
-  font-family:
-    "Monaspace Radon Var",
-    "Annotation Mono",
-    "Symbols Nerd Font",
-    "0xProto Nerd Font Mono",
-    "0xProto Nerd Font",
-    "Noto Sans CJK JP",
-    sans-serif;
-  font-size: 13px;
-  font-weight: 600;
+	font-family:
+		"Monaspace Radon Var", "Symbols Nerd Font", "Noto Sans CJK JP", sans-serif;
+	font-size: 13px;
+	font-weight: 600;
 }
 
 window#waybar {
-  background-color: #f1eee5;
-  color: #2d302b;
-  border-bottom: 1px solid #b7b0a2;
-  padding: 0 12px;
+	background-color: rgba(35, 33, 54, 0.58);
+	color: #e0def4;
+	border-bottom: 1px solid rgba(196, 167, 231, 0.26);
 }
 
 tooltip {
-  background-color: #fbf9f2;
-  border: 1px solid #aaa394;
-  border-radius: 0;
-  box-shadow: none;
+	background-color: #232136;
+	border: 1px solid #44415a;
+	border-radius: 8px;
+	box-shadow: none;
 }
 
 tooltip label {
-  color: #2d302b;
-  padding: 4px 6px;
-  text-shadow: none;
+	color: #e0def4;
+	padding: 4px 6px;
+	text-shadow: none;
 }
 
-#workspaces,
-#window,
-#submap,
+#custom-launcher,
+#custom-niri-windows,
+#custom-niri-ratio,
 #mpris,
 #clock,
-#battery,
-#network,
+#memory,
+#temperature,
 #pulseaudio,
 #bluetooth,
-#temperature,
-#tray,
-#custom-notification,
-#custom-system-control,
+#network,
+#battery,
 #custom-tlp,
-#custom-niri-windows,
-#custom-hypr-windows {
-  background-color: transparent;
-  border: 0;
-  border-left: 1px solid #d0c9bb;
-  border-radius: 0;
-  box-shadow: none;
-  margin: 7px 0;
-  padding: 0 10px;
-  text-shadow: none;
+#custom-system-control,
+#tray,
+#custom-notification {
+	background-color: transparent;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	margin: 5px 0;
+	padding: 0 9px;
+	text-shadow: none;
+}
+
+#custom-niri-ratio,
+#memory,
+#temperature,
+#pulseaudio,
+#bluetooth,
+#network,
+#battery,
+#custom-tlp,
+#custom-system-control,
+#tray,
+#custom-notification {
+	border-left: 1px solid rgba(144, 140, 170, 0.3);
+}
+
+#custom-launcher {
+	margin-left: 8px;
 }
 
 #workspaces {
-  border-left: 0;
-  margin-left: 0;
-  padding-left: 0;
-  padding-right: 8px;
+	background-color: transparent;
+	border: none;
+	border-right: 1px solid rgba(144, 140, 170, 0.3);
+	border-radius: 0;
+	margin: 5px 0 5px 0px;
+	padding: 0 6px 0 0;
 }
 
 #workspaces button {
-  background-color: transparent;
-  background-image: none;
-  border: none;
-  border-image: none;
-  border-radius: 0;
-  box-shadow: none;
-  color: #77766d;
-  margin: 0;
-  min-width: 20px;
-  outline: none;
-  padding: 0 4px;
-  transition: none;
+	background-color: transparent;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	box-shadow: none;
+	color: #908caa;
+	margin: 0 1px;
+	min-width: 22px;
+	padding: 0 5px;
+	text-shadow: none;
 }
 
 #workspaces button:hover {
-  background-color: transparent;
-  color: #2d302b;
-  box-shadow: none;
+	background-color: transparent;
+	color: #e0def4;
 }
 
 #workspaces button.active {
-  background-color: transparent;
-  color: #d38ca0;
-  box-shadow: none;
-  font-weight: 800;
+	background-color: transparent;
+	border-bottom-color: #c4a7e7;
+	color: #c4a7e7;
 }
 
 #workspaces button.urgent {
-  background-color: transparent;
-  color: #8d332b;
-  box-shadow: none;
-  font-weight: 800;
+	background-color: transparent;
+	border-bottom-color: #eb6f92;
+	color: #eb6f92;
 }
 
-#window,
-#custom-niri-windows,
-#custom-hypr-windows,
+#custom-niri-windows {
+	color: #e0def4;
+	padding-left: 5px;
+}
+
+#custom-niri-ratio {
+	color: #908caa;
+}
+
 #mpris {
-  color: #4e5149;
-}
-
-#submap {
-  background-color: transparent;
-  color: #a26a14;
-  font-weight: 700;
-  padding-left: 10px;
+	color: #ea9a97;
 }
 
 #clock {
-  color: #2d302b;
-  font-weight: 700;
+	color: #c4a7e7;
+	font-weight: 700;
+	padding-right: 12px;
+}
+
+#memory,
+#temperature,
+#custom-tlp {
+	color: #908caa;
 }
 
 #pulseaudio,
+#network {
+	color: #9ccfd8;
+}
+
 #bluetooth,
-#network,
-#battery,
-#temperature,
-#custom-tlp,
-#custom-system-control,
+#custom-system-control {
+	color: #c4a7e7;
+}
+
+#battery {
+	color: #f6c177;
+}
+
 #custom-notification {
-  color: #4e5149;
+	color: #e0def4;
+	margin-right: 8px;
 }
 
 #pulseaudio.muted,
 #network.disconnected {
-  color: #8a867c;
-  text-decoration: line-through;
+	color: #6e6a86;
 }
 
 #battery.warning,
-#temperature.critical,
+#temperature.critical {
+	color: #f6c177;
+}
+
 #battery.critical:not(.charging) {
-  color: #a84435;
+	color: #eb6f92;
 }
 
 #tray {
-  padding-left: 8px;
-  padding-right: 8px;
+	padding: 0 8px;
 }
 
 #tray > * {
-  margin: 0 5px;
+	margin: 0 3px;
 }

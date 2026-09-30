@@ -41,6 +41,7 @@ return {
           vim.cmd.colorscheme("rose-pine-dawn")
         else
           vim.cmd.colorscheme("rose-pine-moon")
+          vim.api.nvim_set_hl(0, "Visual", { bg = "#c4a7e7", fg = "#232136" })
         end
       end
 
@@ -168,7 +169,7 @@ return {
         delay = 50,
         ignore_whitespace = false,
       },
-      current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary>",
+      current_line_blame_formatter = "<abbrev_sha> <author>, <author_time:%Y-%m-%d> - <summary>",
       update_debounce = 100,
       status_formatter = nil,
     },

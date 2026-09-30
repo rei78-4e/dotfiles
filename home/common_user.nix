@@ -21,6 +21,8 @@ let
   zen-browser = inputs.zen-browser.packages.${system}.zen-browser;
   helium = inputs.helium-flake.packages.${system}.helium;
 
+  helix-git = inputs.helix-git.packages.${system}.helix;
+
   emacsClient = pkgs.writeShellScriptBin "emacs" ''
     exec ${lib.getExe' pkgs.emacs-pgtk "emacsclient"} --create-frame "$@"
   '';
@@ -85,10 +87,8 @@ let
     # ===== Editor =====
     vim
     neovim
-    helix
+    helix-git
     tree-sitter
-    zed-editor
-    kdePackages.kate
 
     # ===== TUI =====
     yazi
@@ -100,9 +100,6 @@ let
 
     # ===== Shell =====
     fish
-    sheldon
-    zsh
-    zsh-abbr
 
     # ===== cli =====
     fd
@@ -110,7 +107,6 @@ let
     eza
     bat
     dust
-    glow
     zip
     unzip
     tokei
@@ -127,18 +123,11 @@ let
     statix
     deadnix
 
-    # ===== formatter =====
-    rustfmt
-    nixfmt
-    biome
-    stylua
-    shfmt
-
     # ===== Media =====
     ffmpeg
+    imagemagick
 
     # ===== PL =====
-    rust-analyzer
     cargo
     go
     gopls
@@ -151,6 +140,7 @@ let
     clang-tools
     llvm
     lld
+
     tailscale
 
     # ===== Typst =====
@@ -158,13 +148,10 @@ let
     typstyle
     tinymist
 
-    antigravity-cli
-    imagemagick
     chafa
 
     # ===== AI =====
     codex
-    claude-code
     opencode
 
     # ===== auth =====
@@ -196,7 +183,6 @@ let
     spotify
     google-chrome
     helium
-    zen-browser
     zathura
     sioyek
     pinta
@@ -204,19 +190,17 @@ let
     gimp
     nautilus
     loupe
-    clapper
+    clapper # video viewer
     showtime
     libreoffice
     firefox
     discord
     slack
-    vesktop
     gnome-text-editor
     gnome-tweaks
     kdePackages.kdenlive
     mpv
     ghostty
-    hollywood
     vlc
     wiremix
     mpvpaper
@@ -227,7 +211,6 @@ let
     prismlauncher
     niri-float-sticky
     niri-scratchpad
-    wooz
     gnome-calendar
     thunderbird
     evolution
@@ -242,12 +225,23 @@ let
   mkConfigLink = name: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/.config/${name}";
 in
 {
+  imports = [ inputs.vicinae.homeManagerModules.default ];
+
   config = {
     home.username = lib.mkDefault userName;
     home.homeDirectory = lib.mkDefault "/home/${config.home.username}";
     home.stateVersion = "24.11";
 
     programs.home-manager.enable = true;
+
+    programs.vicinae = lib.mkIf (!standalone) {
+      enable = true;
+      systemd = {
+        enable = true;
+        autoStart = true;
+        environment.USE_LAYER_SHELL = 1;
+      };
+    };
 
     programs.gpg.enable = true;
     services.gpg-agent = {

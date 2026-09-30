@@ -190,7 +190,7 @@ abbr -a lg lazygit
 abbr -a z ziggity
 abbr -a rg 'rg --hidden'
 abbr -a y yazi
-abbr -a h 'hxd .'
+abbr -a h 'hx .'
 abbr -a mi mediainfo
 abbr -a n 'nvim .'
 abbr -a e 'emacs -nw .'
@@ -320,4 +320,4 @@ function rebuild
     end
 end
 
-abbr -a org 'cd $HOME/org && nvim .'
+abbr -a org 'cd $HOME/org && $EDITOR .'
