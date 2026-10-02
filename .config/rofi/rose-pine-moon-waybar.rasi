@@ -1,0 +1,164 @@
+/* Rosé Pine Moon: the same dark surface and colored accents as Waybar. */
+* {
+    background: rgba(35, 33, 54, 0.94);
+    surface: rgba(68, 65, 90, 0.42);
+    selected: rgba(196, 167, 231, 0.18);
+    border: rgba(196, 167, 231, 0.34);
+    text: #e0def4;
+    muted: #908caa;
+    rose: #eb6f92;
+    iris: #c4a7e7;
+    foam: #9ccfd8;
+    gold: #f6c177;
+    leaf: #a6d189;
+
+    font: "Monaspace Radon Var 13";
+    background-color: transparent;
+    text-color: @text;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    background-color: @background;
+    border: 1px solid;
+    border-color: @border;
+    border-radius: 0px;
+    width: 600px;
+    padding: 12px;
+    location: center;
+    anchor: center;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing: 8px;
+    children: [ inputbar, message, listview ];
+}
+
+inputbar {
+    background-color: @surface;
+    border: 1px solid;
+    border-color: @border;
+    border-radius: 0px;
+    padding: 8px 11px;
+    spacing: 10px;
+    children: [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color: @rose;
+}
+
+entry {
+    background-color: transparent;
+    text-color: @text;
+    placeholder: "Search…";
+    placeholder-color: @muted;
+    cursor: text;
+}
+
+message {
+    background-color: @surface;
+    border: 1px solid;
+    border-color: @border;
+    border-radius: 0px;
+    padding: 8px 11px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color: @leaf;
+}
+
+listview {
+    background-color: transparent;
+    columns: 1;
+    lines: 20;
+    spacing: 3px;
+    scrollbar: true;
+    cycle: true;
+    dynamic: true;
+    layout: vertical;
+}
+
+element {
+    background-color: transparent;
+    text-color: @text;
+    border: 1px solid;
+    border-color: transparent;
+    border-radius: 0px;
+    padding: 7px 10px;
+    spacing: 10px;
+    orientation: horizontal;
+    children: [ element-icon, element-text ];
+}
+
+element normal.urgent {
+    text-color: @rose;
+}
+
+element normal.active {
+    text-color: @foam;
+}
+
+element selected.normal {
+    background-color: @selected;
+    text-color: @iris;
+    border-color: @border;
+}
+
+element selected.urgent {
+    background-color: @selected;
+    text-color: @rose;
+    border-color: @rose;
+}
+
+element selected.active {
+    background-color: @selected;
+    text-color: @foam;
+    border-color: @foam;
+}
+
+element-icon {
+    background-color: transparent;
+    size: 22px;
+    cursor: pointer;
+}
+
+element-text {
+    background-color: transparent;
+    text-color: inherit;
+    cursor: pointer;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+}
+
+scrollbar {
+    background-color: transparent;
+    handle-color: @iris;
+    border-radius: 0px;
+    handle-width: 4px;
+    padding: 0 2px;
+}
+
+mode-switcher {
+    background-color: @surface;
+    border-radius: 0px;
+    padding: 4px;
+    spacing: 4px;
+}
+
+button {
+    background-color: transparent;
+    text-color: @foam;
+    border-radius: 0px;
+    padding: 5px 9px;
+}
+
+button selected {
+    background-color: @selected;
+    text-color: @iris;
+}

@@ -19,12 +19,11 @@
 (add-to-list 'display-buffer-alist
              '("\\`\\*Compile-Log\\*\\'" . (display-buffer-no-window)))
 
-(defconst seli/opaque-ui-background "#fffaf3")
-(defconst seli/opaque-ui-background-active "#f2e9e1")
-(defconst seli/active-line-indicator "#dfdad9")
-(defconst seli/buffer-alpha-background
-  (if (getenv "EMACS_SCRATCHPAD") 100 100)
-  "Frame background opacity; opaque in the scratchpad to avoid a GDK shm crash.")
+(defconst seli/opaque-ui-background "#2a273f")
+(defconst seli/opaque-ui-background-active "#393552")
+(defconst seli/active-line-indicator "#56526e")
+(defconst seli/buffer-alpha-background 60
+  "Frame background opacity, matching Kitty's 0.6 background opacity.")
 
 (defconst seli/instance-subdir
   (if (getenv "EMACS_SCRATCHPAD") "scratchpad/" "")
@@ -242,7 +241,6 @@
 
 (defconst seli/opaque-ui-faces
   '((menu . seli/opaque-ui-background-active)
-    (tool-bar . seli/opaque-ui-background-active)
     (tab-bar . seli/opaque-ui-background-active)
     (tab-bar-tab . seli/opaque-ui-background)
     (tab-bar-tab-inactive . seli/opaque-ui-background-active)
@@ -265,22 +263,22 @@
 
 (defun seli/style-tab-line (&optional frame)
   "Give tabs a flat appearance with a clear selected state in FRAME."
-  (dolist (spec '((tab-bar :background "#faf4ed" :foreground "#9893a5"
+(dolist (spec '((tab-bar :background "#2a273f" :foreground "#908caa"
                            :box nil :height 1.0 :extend t)
-                  (tab-bar-tab :background "#f2e9e1" :foreground "#575279"
+                  (tab-bar-tab :background "#393552" :foreground "#e0def4"
                                :weight semi-bold :box nil :underline nil)
-                  (tab-bar-tab-inactive :background "#faf4ed" :foreground "#9893a5"
+                  (tab-bar-tab-inactive :background "#2a273f" :foreground "#908caa"
                                         :weight normal :box nil :underline nil)
-                  (tab-bar-tab-group-current :background "#faf4ed" :foreground "#575279"
+                  (tab-bar-tab-group-current :background "#2a273f" :foreground "#e0def4"
                                              :weight semi-bold :box nil)
-                  (tab-bar-tab-group-inactive :background "#faf4ed" :foreground "#9893a5"
+                  (tab-bar-tab-group-inactive :background "#2a273f" :foreground "#908caa"
                                               :weight normal :box nil)
-                  (tab-bar-tab-ungrouped :background "#faf4ed" :foreground "#9893a5"
+                  (tab-bar-tab-ungrouped :background "#2a273f" :foreground "#908caa"
                                          :box nil)
-                  (tab-line :background "#faf4ed" :foreground "#9893a5" :box nil :extend t)
-                  (tab-line-tab :background "#faf4ed" :foreground "#797593" :box nil)
-                  (tab-line-tab-inactive :background "#faf4ed" :foreground "#9893a5" :box nil)
-                  (tab-line-tab-current :background "#f2e9e1" :foreground "#575279"
+                  (tab-line :background "#2a273f" :foreground "#908caa" :box nil :extend t)
+                  (tab-line-tab :background "#2a273f" :foreground "#908caa" :box nil)
+                  (tab-line-tab-inactive :background "#2a273f" :foreground "#908caa" :box nil)
+                  (tab-line-tab-current :background "#393552" :foreground "#e0def4"
                                         :weight semi-bold :box nil :underline nil)))
     ;; Update the global face as well as FRAME.  This is necessary when Emacs
     ;; starts as a daemon: its initial frame is terminal-only, while the GUI
@@ -312,7 +310,11 @@
     (if (display-graphic-p frame)
         (progn
           (set-frame-parameter frame 'alpha '(100 . 100))
-          (set-frame-parameter frame 'alpha-background seli/buffer-alpha-background)
+          ;; The titled scratchpad frame stays opaque to avoid a PGTK shm crash.
+          (set-frame-parameter frame 'alpha-background
+                               (if (equal (frame-parameter frame 'title) "Scratchpad Emacs")
+                                   100
+                                 seli/buffer-alpha-background))
           (dolist (entry seli/opaque-ui-faces)
             (let ((face (car entry))
                   (background (symbol-value (cdr entry))))
@@ -329,7 +331,6 @@
 
 (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
 (add-to-list 'default-frame-alist `(alpha-background . ,seli/buffer-alpha-background))
-;; Temporarily disabled to inspect Rose Pine Dawn without local face overrides.
 (add-hook 'after-make-frame-functions #'seli/apply-frame-appearance)
 (add-hook 'window-setup-hook #'seli/reapply-frame-appearance)
 (advice-add 'load-theme :after #'seli/reapply-frame-appearance)
@@ -387,21 +388,20 @@ soon as an emacsclient GUI frame is created."
 
 (menu-bar-mode 1)
 (when (fboundp 'tool-bar-mode)
-  (setq tool-bar-style 'image)
-  (tool-bar-mode 1))
+  (tool-bar-mode -1))
 (tab-bar-mode 1)
 (global-tab-line-mode -1)
 
 ;; Load Org's faces before enabling the theme.  Otherwise faces created only
 ;; when Org loads (notably TODO/DONE) retain Emacs's bright default colors.
 (require 'org)
-(load-theme 'rose-pine-dawn t)
+(load-theme 'rose-pine-moon t)
 
 (defun seli/toggle-theme ()
   "Reload the configured theme."
   (interactive)
   (mapc #'disable-theme custom-enabled-themes)
-  (load-theme 'rose-pine-dawn t))
+  (load-theme 'rose-pine-moon t))
 
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)

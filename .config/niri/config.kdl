@@ -6,6 +6,8 @@ spawn-sh-at-startup "systemctl --user import-environment WAYLAND_DISPLAY XDG_CUR
 spawn-sh-at-startup "systemctl --user restart xdg-desktop-portal.service"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
+spawn-at-startup "niri-float-sticky" "-title" "Picture in picture|Picture-in-Picture"
+spawn-at-startup "niri-window-hooks"
 
 output "DP-1" {
     mode "3840x2160"
@@ -68,7 +70,7 @@ overview {
 }
 
 layer-rule {
-    match namespace="^noctalia-backdrop"
+    match namespace="^noctalia-backdrop|awww"
     place-within-backdrop true
 }
 layer-rule {
@@ -121,23 +123,18 @@ input {
     mouse {
         natural-scroll
     }
-
-    trackpoint {
-        accel-speed 0.2
-        natural-scroll
-    }
 }
 
 
 layout {
-    gaps 4
+    gaps 2
     background-color "transparent"
 
     struts {
-        left 3
-        right 3
-        top 1
-        bottom 4
+        left 4
+        right 4
+        top 0
+        bottom 0
     }
 
     center-focused-column "never"
@@ -337,15 +334,12 @@ binds {
     Super+T {
         spawn "kitty"
     }
-    Super+M {
-        quit
-    }
+    Super+M { maximize-window-to-edges; }
+    Super+Shift+E { quit; }
     Super+V {
         toggle-window-floating
     }
-    Super+F {
-        maximize-column
-    }
+    Super+F { maximize-column; }
     Super+Ctrl+F {
         fullscreen-window
     }
@@ -516,13 +510,13 @@ binds {
     Ctrl+Shift+S repeat=false {
         screenshot
     }
-    // --- utilities ---
     Super+Shift+P {
-        spawn-sh "$HOME/dotfiles/script/cmd_p.py"
+        screenshot-screen
     }
-    Super+Shift+E {
-        spawn-sh "$HOME/dotfiles/script/logout.py"
-    }
+    // --- utilities ---
+    // Super+Shift+P {
+    //     spawn-sh "$HOME/dotfiles/script/cmd_p.py"
+    // }
     XF86ScreenSaver {
         spawn-sh "loginctl lock-session"
     }

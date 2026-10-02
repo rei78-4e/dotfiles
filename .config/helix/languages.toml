@@ -1,6 +1,11 @@
 [language-server.moonbit-lsp]
 command = "moonbit-lsp"
 
+[language-server.astro-ls]
+command = "/home/rei/.config/helix/astro-ls-wrapper.sh"
+args = ["--stdio"]
+config = { typescript = { tsdk = "/home/rei/.cache/helix/astro-typescript/lib" } }
+
 [language-server.lua-language-server.config.Lua.hint]
 arrayIndex = "Disable"
 
@@ -67,3 +72,4 @@ auto-format = true
 [[grammar]]
 name = "moonbit"
 source = { git = "https://github.com/moonbitlang/tree-sitter-moonbit", rev = "main" }
+

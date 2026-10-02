@@ -18,10 +18,16 @@ let
   zathura-gui = inputs.zathura-gui.packages.${system}.default;
   niri-float-sticky = inputs.niri-float-sticky.packages.${system}.default;
   niri-scratchpad = inputs.niri-scratchpad.packages.${system}.default;
-  zen-browser = inputs.zen-browser.packages.${system}.zen-browser;
-  helium = inputs.helium-flake.packages.${system}.helium;
-
-  helix-git = inputs.helix-git.packages.${system}.helix;
+  niri-window-hooks = inputs.niri-window-hooks.packages.${system}.default;
+  helix-git = inputs.helix-git.packages.${system}.helix.override {
+    grammarOverlays = [
+      (_final: prev: {
+        perl = prev.perl.overrideAttrs (old: {
+          FLAGS = old.FLAGS ++ [ "-std=c11" ];
+        });
+      })
+    ];
+  };
 
   emacsClient = pkgs.writeShellScriptBin "emacs" ''
     exec ${lib.getExe' pkgs.emacs-pgtk "emacsclient"} --create-frame "$@"
@@ -89,6 +95,7 @@ let
     neovim
     helix-git
     tree-sitter
+    zed-editor
 
     # ===== TUI =====
     yazi
@@ -182,7 +189,6 @@ let
     kitty
     spotify
     google-chrome
-    helium
     zathura
     sioyek
     pinta
@@ -195,6 +201,7 @@ let
     libreoffice
     firefox
     discord
+    fractal
     slack
     gnome-text-editor
     gnome-tweaks
@@ -211,6 +218,7 @@ let
     prismlauncher
     niri-float-sticky
     niri-scratchpad
+    niri-window-hooks
     gnome-calendar
     thunderbird
     evolution
@@ -225,23 +233,12 @@ let
   mkConfigLink = name: config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/.config/${name}";
 in
 {
-  imports = [ inputs.vicinae.homeManagerModules.default ];
-
   config = {
     home.username = lib.mkDefault userName;
     home.homeDirectory = lib.mkDefault "/home/${config.home.username}";
     home.stateVersion = "24.11";
 
     programs.home-manager.enable = true;
-
-    programs.vicinae = lib.mkIf (!standalone) {
-      enable = true;
-      systemd = {
-        enable = true;
-        autoStart = true;
-        environment.USE_LAYER_SHELL = 1;
-      };
-    };
 
     programs.gpg.enable = true;
     services.gpg-agent = {
@@ -456,29 +453,7 @@ in
       settings.StartupWMClass = "Emacsd";
     };
 
-    systemd.user.services.niri-float-sticky = {
-      Unit = {
-        Description = "Make picture-in-picture windows stick across niri workspaces";
-        PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session.target" ];
-      };
-
-      Service = {
-        Type = "simple";
-        ExecStart = lib.escapeShellArgs [
-          (lib.getExe niri-float-sticky)
-          "-title"
-          "Picture in picture|Picture-in-Picture"
-        ];
-        Restart = "on-failure";
-        RestartSec = 2;
-        StandardOutput = "journal";
-        StandardError = "journal";
-      };
-
-      Install.WantedBy = [ "graphical-session.target" ];
-    };
-
+    # Keep Noctalia available for manual use; Waybar starts with the session.
     systemd.user.services.noctalia = {
       Unit = {
         Description = "Noctalia status bar";
@@ -495,8 +470,6 @@ in
         StandardOutput = "journal";
         StandardError = "journal";
       };
-
-      Install.WantedBy = [ "graphical-session.target" ];
     };
 
     systemd.user.services.cliphist-clean = {

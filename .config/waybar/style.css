@@ -2,7 +2,7 @@
 * {
 	font-family:
 		"Monaspace Radon Var", "Symbols Nerd Font", "Noto Sans CJK JP", sans-serif;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 600;
 }
 
@@ -44,7 +44,7 @@ tooltip label {
 	border: none;
 	border-radius: 0;
 	box-shadow: none;
-	margin: 5px 0;
+	margin: 0;
 	padding: 0 9px;
 	text-shadow: none;
 }
@@ -64,6 +64,9 @@ tooltip label {
 }
 
 #custom-launcher {
+	background-color: rgba(235, 111, 146, 0.16);
+	border-radius: 6px;
+	color: #eb6f92;
 	margin-left: 8px;
 }
 
@@ -72,7 +75,7 @@ tooltip label {
 	border: none;
 	border-right: 1px solid rgba(144, 140, 170, 0.3);
 	border-radius: 0;
-	margin: 5px 0 5px 0px;
+	margin: 0;
 	padding: 0 6px 0 0;
 }
 
@@ -82,16 +85,17 @@ tooltip label {
 	border-bottom: 2px solid transparent;
 	border-radius: 0;
 	box-shadow: none;
-	color: #908caa;
+	color: #9ccfd8;
 	margin: 0 1px;
+	min-height: 0;
 	min-width: 22px;
 	padding: 0 5px;
 	text-shadow: none;
 }
 
 #workspaces button:hover {
-	background-color: transparent;
-	color: #e0def4;
+	background-color: rgba(246, 193, 119, 0.12);
+	color: #f6c177;
 }
 
 #workspaces button.active {
@@ -107,12 +111,12 @@ tooltip label {
 }
 
 #custom-niri-windows {
-	color: #e0def4;
+	color: #a6d189;
 	padding-left: 5px;
 }
 
 #custom-niri-ratio {
-	color: #908caa;
+	color: #f6c177;
 }
 
 #mpris {
@@ -125,18 +129,30 @@ tooltip label {
 	padding-right: 12px;
 }
 
-#memory,
-#temperature,
-#custom-tlp {
-	color: #908caa;
+#memory {
+	color: #c4a7e7;
 }
 
-#pulseaudio,
-#network {
+#temperature {
+	color: #f6c177;
+}
+
+#custom-tlp {
+	color: #ea9a97;
+}
+
+#pulseaudio {
 	color: #9ccfd8;
 }
 
-#bluetooth,
+#bluetooth {
+	color: #b7bdf8;
+}
+
+#network {
+	color: #a6d189;
+}
+
 #custom-system-control {
 	color: #c4a7e7;
 }
@@ -155,11 +171,11 @@ tooltip label {
 	color: #6e6a86;
 }
 
-#battery.warning,
-#temperature.critical {
+#battery.warning {
 	color: #f6c177;
 }
 
+#temperature.critical,
 #battery.critical:not(.charging) {
 	color: #eb6f92;
 }

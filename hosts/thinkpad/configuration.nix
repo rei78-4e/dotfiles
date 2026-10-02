@@ -32,6 +32,80 @@ in
 
   hardware.enableAllFirmware = true;
 
+  services.tlp.settings = {
+    PLATFORM_PROFILE_ON_AC = lib.mkForce "performance";
+    CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+    CPU_SCALING_GOVERNOR_ON_AC = "performance";
+    CPU_BOOST_ON_AC = 1;
+  };
+
+  # Use level 1 on AC power, but keep stronger cooling until the CPU cools
+  # down after reaching 80 C. Refresh unchanged levels only for the watchdog.
+  boot.extraModprobeConfig = ''
+    options thinkpad_acpi fan_control=1
+  '';
+  systemd.services.thinkpad-ac-fan = {
+    description = "Control ThinkPad fan with temperature hysteresis on AC power";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-modules-load.service" ];
+    serviceConfig = {
+      Type = "simple";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+    script = ''
+      set -eu
+      fan=/proc/acpi/ibm/fan
+      ac=/sys/class/power_supply/AC/online
+      read -r fan_control < /sys/module/thinkpad_acpi/parameters/fan_control
+      [ "$fan_control" = Y ] || exit 0
+      temperature_file=
+      for sensor in /sys/class/hwmon/hwmon*; do
+        read -r sensor_name < "$sensor/name"
+        if [ "$sensor_name" = k10temp ]; then
+          temperature_file="$sensor/temp1_input"
+          break
+        fi
+      done
+      [ -n "$temperature_file" ] || exit 1
+      printf 'watchdog 120\n' > "$fan"
+      trap 'printf "level auto\n" > "$fan"' EXIT
+      trap 'exit 0' TERM INT
+      previous_online=
+      refresh_ticks=0
+      target_level=1
+      while true; do
+        read -r online < "$ac"
+        if [ "$online" = 1 ]; then
+          read -r temperature < "$temperature_file"
+          if [ "$temperature" -ge 80000 ]; then
+            target_level=7
+          elif [ "$temperature" -le 70000 ]; then
+            target_level=1
+          fi
+          reported_level=
+          while read -r key value; do
+            if [ "$key" = level: ]; then
+              reported_level=$value
+              break
+            fi
+          done < "$fan"
+          if [ "$previous_online" != 1 ] || [ "$reported_level" != "$target_level" ] || [ "$refresh_ticks" -ge 9 ]; then
+            printf 'level %s\n' "$target_level" > "$fan"
+            refresh_ticks=0
+          else
+            refresh_ticks=$((refresh_ticks + 1))
+          fi
+        elif [ "$previous_online" != 0 ]; then
+          printf 'level auto\n' > "$fan"
+          target_level=1
+        fi
+        previous_online=$online
+        sleep 10
+      done
+    '';
+  };
+
   time.timeZone = "Asia/Tokyo";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.inputMethod = {
@@ -59,9 +133,9 @@ in
   services.gvfs.enable = true;
 
   services.logind.settings.Login = {
-    HandleLidSwitch = "hibernate";
-    HandleLidSwitchExternalPower = "hibernate";
-    HandleLidSwitchDocked = "hibernate";
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
   };
 
   services.fprintd.enable = true;
@@ -146,20 +220,19 @@ in
   systemd.sleep.settings.Sleep = {
     AllowHibernation = true;
     AllowSuspendThenHibernate = true;
-    # Start suspend after 15 idle minutes, then hibernate 15 minutes later.
+    # If suspend-then-hibernate is requested manually, hibernate after 15 minutes.
     HibernateDelaySec = "15min";
     HibernateOnACPower = false;
   };
 
   # The persistent boot default may point to another OS. Resume with the same
   # boot entry/kernel that wrote the image, without changing that default.
-  systemd.services = lib.genAttrs
-    [ "systemd-hibernate" "systemd-suspend-then-hibernate" ]
-    (_: {
-      serviceConfig.ExecStartPre = [
-        "${pkgs.systemd}/bin/bootctl set-oneshot @current"
-      ];
-    });
+  systemd.services.systemd-hibernate.serviceConfig.ExecStartPre = [
+    "${pkgs.systemd}/bin/bootctl set-oneshot @current"
+  ];
+  systemd.services.systemd-suspend-then-hibernate.serviceConfig.ExecStartPre = [
+    "${pkgs.systemd}/bin/bootctl set-oneshot @current"
+  ];
 
   nix.settings.experimental-features = [
     "nix-command"

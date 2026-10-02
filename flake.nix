@@ -1,11 +1,6 @@
 {
   description = "dotfiles: NixOS + flakes + Home Manager";
 
-  nixConfig = {
-    extra-substituters = [ "https://vicinae.cachix.org" ];
-    extra-trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
-  };
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -41,23 +36,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    niri-window-hooks = {
+      url = "github:rei78-4e/niri-window-hooks";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nur = {
       url = "github:charmbracelet/nur";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    zen-browser = {
-      url = "github:youwen5/zen-browser-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    helium-flake = {
-      url = "github:oxcl/nix-flake-helium-browser";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    vicinae = {
-      url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -1,21 +1,16 @@
 // Rofi Configuration
-// Uncoated Paper design, per README/PaperDesign.md
+// Rosé Pine Moon design shared with Waybar.
 
 configuration {
     // General settings
     modi: "drun,run,window";
-    font: "Annotation Mono 13";
+    font: "Monaspace Radon Var 13";
     show-icons: true;
     icon-theme: "Adwaita";
     display-drun: "󰍉";
     display-run: "";
     display-window: "";
     drun-display-format: "{name}";
-    
-    // Window settings
-    width: 50;
-    lines: 12;
-    columns: 1;
     
     // Behavior
     sort: true;
@@ -38,4 +33,4 @@ configuration {
     kb-row-right: "Control+Page_Down";
 }
 
-@theme "paper"
+@theme "rose-pine-moon-waybar"

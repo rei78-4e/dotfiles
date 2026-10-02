@@ -102,8 +102,14 @@
       "key": "{##00b894}│  󰢮 GPU     "
     },
     {
-      "type": "memory",
-      "key": "{##00b894}│  󰍛 Memory  "
+      "type": "command",
+      "key": "{##00b894}│  󰍛 Memory  ",
+      "text": "$HOME/dotfiles/script/memory-info.sh"
+    },
+    {
+      "type": "command",
+      "key": "{##00b894}│  󰍛 Cache   ",
+      "text": "$HOME/dotfiles/script/memory-info.sh cache"
     },
     {
       "type": "swap",

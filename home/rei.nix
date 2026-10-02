@@ -6,20 +6,6 @@
   standalone ? false,
   ...
 }:
-let
-  tex = pkgs.texliveSmall.withPackages (
-    ps: with ps; [
-      collection-langjapanese
-      collection-luatex
-      collection-latexextra
-      haranoaji
-      haranoaji-extra
-      fontspec
-      hyperref
-      latexmk
-    ]
-  );
-in
 {
   imports = [
     ./common_user.nix
@@ -45,10 +31,8 @@ in
     setSessionVariables = false;
   };
 
-  # TeX and herdr are retained in the NixOS closure.  Fedora projects should
-  # declare their exact versions in a devShell instead.
+  # herdr is retained in the NixOS closure.
   home.packages = lib.optionals (!standalone) [
-    tex
     inputs.herdr.packages.${pkgs.system}.default
   ];
 }

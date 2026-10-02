@@ -1,3 +1,5 @@
+;;; rose-pine-moon-theme.el --- Rosé Pine Moon theme -*- lexical-binding: t; -*-
+
 (deftheme rose-pine-moon
   "Rose Pine Moon theme tuned for transparent terminal backgrounds.")
 

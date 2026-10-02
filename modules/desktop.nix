@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   inputs,
@@ -14,7 +13,6 @@ let
     set -eu
     BASE="$HOME/dotfiles/.config/waybar"
 
-    ${pkgs.awww}/bin/awww-daemon &
     for _ in $(seq 1 50); do
       ${pkgs.awww}/bin/awww query >/dev/null 2>&1 && break
       sleep 0.1
@@ -31,6 +29,19 @@ let
         exec ${pkgs.waybar}/bin/waybar -c "$BASE/config.hypr.jsonc" -s "$BASE/style.css"
         ;;
     esac
+  '';
+
+  awwwRestore = pkgs.writeShellScript "awww-restore" ''
+    set -eu
+    for _ in $(${pkgs.coreutils}/bin/seq 1 50); do
+      if ${pkgs.awww}/bin/awww query >/dev/null 2>&1; then
+        ${pkgs.awww}/bin/awww restore || true
+        exit 0
+      fi
+      ${pkgs.coreutils}/bin/sleep 0.1
+    done
+    echo "awww daemon did not become ready" >&2
+    exit 1
   '';
 
   swayncLaunch = pkgs.writeShellScript "swaync-launch" ''
@@ -77,41 +88,6 @@ let
       /run/current-system/sw/bin/hyprctl dispatch dpms on
     fi
   '';
-  idleSuspendThenHibernate = config.systemd.sleep.settings.Sleep.AllowSuspendThenHibernate or false;
-  swayidleSleep = pkgs.writeShellScript "swayidle-sleep" ''
-    set -euo pipefail
-    [ "$(cat /sys/class/power_supply/AC/online)" = 0 ] || exit 0
-
-    ${lib.optionalString idleSuspendThenHibernate ''
-      lid=$(${pkgs.systemd}/bin/busctl get-property \
-        org.freedesktop.login1 /org/freedesktop/login1 \
-        org.freedesktop.login1.Manager LidClosed)
-      [ "$lid" = "b false" ] || exit 0
-    ''}
-
-    operation="$1"
-    case "$operation" in
-      suspend-then-hibernate) method=CanSuspendThenHibernate ;;
-      hibernate) method=CanHibernate ;;
-      *) exit 2 ;;
-    esac
-    can_sleep() {
-      local capability
-      capability=$(${pkgs.systemd}/bin/busctl --json=short call \
-        org.freedesktop.login1 /org/freedesktop/login1 \
-        org.freedesktop.login1.Manager "$1") || return 1
-      /run/current-system/sw/bin/jq -e '.data == ["yes"]' \
-        <<< "$capability" >/dev/null
-    }
-    if ! can_sleep "$method"; then
-      # Still suspend at 15 minutes if hibernation is temporarily unavailable.
-      [ "$operation" = suspend-then-hibernate ] || exit 0
-      can_sleep CanSuspend || exit 0
-      operation=suspend
-    fi
-    exec ${pkgs.systemd}/bin/systemctl --no-ask-password "$operation"
-  '';
-
   swayidleLock = pkgs.writeShellScript "swayidle-lock" ''
     ${lib.getExe pkgs.hyprlock}
     loginctl unlock-session
@@ -121,25 +97,11 @@ let
     exec ${pkgs.swayidle}/bin/swayidle -w \
       timeout 480 ${swayidleBrightnessDown} resume ${swayidleBrightnessUp} \
       timeout 3600 ${swayidleLockOff} resume ${swayidleMonitorsOn} \
-      ${lib.optionalString idleSuspendThenHibernate "timeout 900 '${swayidleSleep} suspend-then-hibernate'"} \
-      timeout 1800 '${swayidleSleep} hibernate' \
       lock ${swayidleLock} \
       before-sleep 'loginctl lock-session'
   '';
 in
 {
-  imports = [ inputs.vicinae.nixosModules.default ];
-
-  # Vicinae's input server needs a privileged wrapper for clipboard/emoji
-  # pasting and snippets; the launcher itself is installed per-user via the
-  # home-manager module in home/common_user.nix.
-  programs.vicinae.input-server.enable = true;
-
-  nix.settings = {
-    trusted-substituters = [ "https://vicinae.cachix.org" ];
-    trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
-  };
-
   # ===== desktop base (entire system) =====
   services.desktopManager.gnome.enable = true;
   services.displayManager.defaultSession = "niri";
@@ -219,14 +181,31 @@ in
       wantedBy = [ "graphical-session.target" ];
     };
 
+    awww = {
+      description = "Wallpaper daemon";
+      unitConfig = {
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+        Conflicts = [ "noctalia.service" ];
+      };
+      serviceConfig = {
+        ExecStart = "${pkgs.awww}/bin/awww-daemon";
+        ExecStartPost = awwwRestore;
+        Restart = "on-failure";
+      };
+      wantedBy = [ "graphical-session.target" ];
+    };
+
     waybar = {
       description = "Waybar status bar";
       unitConfig = {
         PartOf = [ "graphical-session.target" ];
         After = [
           "graphical-session.target"
+          "awww.service"
           "swaync.service"
         ];
+        Wants = [ "awww.service" ];
         Conflicts = [ "noctalia.service" ];
         Requires = [ "swaync.service" ];
       };
@@ -235,6 +214,7 @@ in
         Restart = "on-failure";
         Environment = [ "PATH=/run/current-system/sw/bin" ];
       };
+      wantedBy = [ "graphical-session.target" ];
     };
 
     swaync = {
@@ -325,6 +305,11 @@ in
       noto-fonts-cjk-serif
       noto-fonts-color-emoji
       nerd-fonts.symbols-only
+      (runCommand "harano-aji-fonts" { } ''
+        mkdir -p "$out/share/fonts/opentype"
+        ln -s ${texlivePackages.haranoaji.tex}/fonts/opentype/public/haranoaji/*.otf "$out/share/fonts/opentype/"
+        ln -s ${texlivePackages.haranoaji-extra.tex}/fonts/opentype/public/haranoaji-extra/*.otf "$out/share/fonts/opentype/"
+      '')
     ];
     fontconfig.defaultFonts = {
       sansSerif = [
