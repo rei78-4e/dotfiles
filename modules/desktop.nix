@@ -104,6 +104,7 @@ in
 {
   # ===== desktop base (entire system) =====
   services.desktopManager.gnome.enable = true;
+  services.xserver.desktopManager.xfce.enable = true;
   services.displayManager.defaultSession = "niri";
   programs.ssh.askPassword = "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
   programs.niri.enable = true;
@@ -132,6 +133,20 @@ in
             '';
           });
     }
+    (
+      { config, lib, ... }:
+      {
+        home.activation.repairXfceSession = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          session_config="${config.home.homeDirectory}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml"
+          if [ -f "$session_config" ] \
+            && ${pkgs.gnugrep}/bin/grep -Fq '<property name="Client0_Command" type="empty"/>' "$session_config" \
+            && ${pkgs.gnugrep}/bin/grep -Fq '<property name="Client2_Command" type="empty"/>' "$session_config" \
+            && ${pkgs.gnugrep}/bin/grep -Fq '<property name="Client4_Command" type="empty"/>' "$session_config"; then
+            $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv -- "$session_config" "$session_config.broken-$(${pkgs.coreutils}/bin/date +%Y%m%d%H%M%S)"
+          fi
+        '';
+      }
+    )
   ];
   xdg.portal.config.niri."org.freedesktop.impl.portal.Secret" = lib.mkForce "gnome-keyring";
   programs.hyprlock.enable = true;
