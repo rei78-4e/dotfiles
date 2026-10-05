@@ -227,7 +227,7 @@ in
       serviceConfig = {
         ExecStart = waybarLaunch;
         Restart = "on-failure";
-        Environment = [ "PATH=/run/current-system/sw/bin" ];
+        Environment = [ "PATH=/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin" ];
       };
       wantedBy = [ "graphical-session.target" ];
     };
