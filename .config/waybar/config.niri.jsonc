@@ -17,7 +17,7 @@
     "pulseaudio",
     "bluetooth",
     "network",
-    "battery",
+    "custom/battery",
     "custom/tlp",
     "custom/system-control",
     "tray",
@@ -134,15 +134,11 @@
     "max-length": 11,
     "on-click": "~/dotfiles/script/system_control.sh wifi"
   },
-  "battery": {
-    "states": {
-      "warning": 30,
-      "critical": 15
-    },
-    "format": "{icon}{capacity}%",
-    "format-charging": "󰂄 {capacity}%",
-    "format-plugged": " {capacity}%",
-    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+  "custom/battery": {
+    "exec": "denki-yoho",
+    "interval": 30,
+    "return-type": "json",
+    "format": "{}",
     "on-click": "~/dotfiles/script/system_control.sh brightness"
   },
   "custom/tlp": {

@@ -834,6 +834,12 @@ identifiers."
     (tab-new)
     (org-open-at-point)))
 
+;; http(s) リンクはシステム既定のブラウザで開く。
+(use-package browse-url
+  :ensure nil
+  :custom
+  (browse-url-browser-function #'browse-url-xdg-open))
+
 (use-package org
   :ensure nil
   :mode ("\\.org\\'" . org-mode)

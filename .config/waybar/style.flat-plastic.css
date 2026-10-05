@@ -41,7 +41,7 @@ tooltip label {
 #submap,
 #mpris,
 #clock,
-#battery,
+#custom-battery,
 #network,
 #pulseaudio,
 #bluetooth,
@@ -124,7 +124,7 @@ tooltip label {
   color: #89dceb;
 }
 
-#battery {
+#custom-battery {
   color: #fab387;
 }
 
@@ -142,7 +142,7 @@ tooltip label {
 }
 
 #temperature.critical,
-#battery.critical:not(.charging) {
+#custom-battery.critical:not(.charging) {
   color: #f38ba8;
   background: linear-gradient(
     to bottom,
@@ -170,7 +170,7 @@ tooltip label {
 #submap:hover,
 #mpris:hover,
 #clock:hover,
-#battery:hover,
+#custom-battery:hover,
 #network:hover,
 #pulseaudio:hover,
 #bluetooth:hover,

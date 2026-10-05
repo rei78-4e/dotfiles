@@ -41,6 +41,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    denki-yoho = {
+      url = "github:rei78-4e/denki-yoho";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nur = {
       url = "github:charmbracelet/nur";
       inputs.nixpkgs.follows = "nixpkgs";

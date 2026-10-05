@@ -255,8 +255,6 @@ in
     "SSH_ASKPASS"
   ];
 
-  programs.direnv.enable = true;
-
   nixpkgs.config.allowUnfree = true;
 
   users.users.${userName} = {

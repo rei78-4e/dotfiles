@@ -19,6 +19,7 @@ let
   niri-float-sticky = inputs.niri-float-sticky.packages.${system}.default;
   niri-scratchpad = inputs.niri-scratchpad.packages.${system}.default;
   niri-window-hooks = inputs.niri-window-hooks.packages.${system}.default;
+  denki-yoho = inputs.denki-yoho.packages.${system}.default;
   helix-git = inputs.helix-git.packages.${system}.helix.override {
     grammarOverlays = [
       (_final: prev: {
@@ -125,8 +126,6 @@ let
     mediainfo
 
     # ===== nix =====
-    direnv
-    nix-direnv
     statix
     deadnix
 
@@ -159,6 +158,7 @@ let
 
     # ===== AI =====
     codex
+    claude-code
     opencode
 
     # ===== auth =====
@@ -206,6 +206,7 @@ let
     gnome-text-editor
     gnome-tweaks
     kdePackages.kdenlive
+    shotcut
     mpv
     ghostty
     vlc
@@ -219,6 +220,7 @@ let
     niri-float-sticky
     niri-scratchpad
     niri-window-hooks
+    denki-yoho
     gnome-calendar
     thunderbird
     evolution
@@ -270,6 +272,8 @@ in
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true;
+
+      config.global.hide_env_diff = true;
     };
 
     gtk = {
@@ -430,6 +434,7 @@ in
         source = mkConfigLink "obs-studio";
         recursive = false;
       };
+      "claude"
     };
 
     xdg.desktopEntries.emacs = lib.mkIf (!standalone) {

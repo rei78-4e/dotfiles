@@ -8,7 +8,7 @@
             "id": "pipewire-screen-capture-source",
             "versioned_id": "pipewire-screen-capture-source",
             "settings": {
-                "RestoreToken": "lAS43PY0i7cyk_eD2gRpwQ"
+                "RestoreToken": "IAx3fbNKsDAiQRIecMslQw"
             },
             "mixers": 0,
             "sync": 0,
@@ -89,20 +89,20 @@
                         "id": 1,
                         "group_item_backup": false,
                         "pos": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": -197.0,
+                            "y": -809.0
                         },
                         "pos_rel": {
-                            "x": -1.600000023841858,
-                            "y": -1.0
+                            "x": -1.9283332824707031,
+                            "y": -2.3483333587646484
                         },
                         "scale": {
-                            "x": 1.0,
-                            "y": 1.0
+                            "x": 1.2429378032684326,
+                            "y": 1.2429949045181274
                         },
                         "scale_rel": {
-                            "x": 0.8999999761581421,
-                            "y": 0.8999999761581421
+                            "x": 1.1186439990997314,
+                            "y": 1.1186953783035278
                         },
                         "bounds": {
                             "x": 0.0,
