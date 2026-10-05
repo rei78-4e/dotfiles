@@ -434,7 +434,6 @@ in
         source = mkConfigLink "obs-studio";
         recursive = false;
       };
-      "claude"
     };
 
     xdg.desktopEntries.emacs = lib.mkIf (!standalone) {
