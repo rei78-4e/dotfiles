@@ -73,3 +73,17 @@ auto-format = true
 name = "moonbit"
 source = { git = "https://github.com/moonbitlang/tree-sitter-moonbit", rev = "main" }
 
+[[language]]
+name = "clojure"
+auto-pairs = { '(' = ')', '{' = '}', '[' = ']', '"' = '"' }
+
+[[language]]
+name = "javascript"
+formatter = { command = "biome", args = [
+  "format",
+  "--indent-style=space",
+  "--indent-width=2",
+  "--stdin-file-path", "a.js",
+] }
+auto-format = true
+

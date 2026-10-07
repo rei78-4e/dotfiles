@@ -25,6 +25,12 @@ in
     "1.1.1.1"
     "1.0.0.1"
   ];
+  programs.wireshark = {
+    enable = true;
+    package = pkgs.wireshark;
+  };
+  # user groups set more under lines
+
   virtualisation.libvirtd = {
     enable = true;
     onBoot = "start";
@@ -264,6 +270,7 @@ in
       "networkmanager"
       "libvirtd"
       "kvm"
+      "wireshark"
     ];
     shell = pkgs.fish;
   };

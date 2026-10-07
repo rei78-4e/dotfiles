@@ -108,6 +108,9 @@ in
   services.displayManager.defaultSession = "niri";
   programs.ssh.askPassword = "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
   programs.niri.enable = true;
+
+  services.xserver.desktopManager.lxqt.enable = true;
+
   # Use GNOME Keyring as Secret Service in both GNOME and niri sessions.
   home-manager.sharedModules = [
     {
@@ -263,11 +266,16 @@ in
   };
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
+  security.pam.services.sddm.enableGnomeKeyring = true;
 
   services.upower.enable = true;
 
   services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;
+  services.displayManager.gdm.enable = false;
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = false;
+  };
 
   services.keyd = {
     enable = true;
@@ -362,6 +370,7 @@ in
     swtpm
     udiskie
     usbutils
+    lxqt.lxqt-wayland-session
     # niri 26.04+ provides X11 exclusively through xwayland-satellite
     # (on-demand). Without it there is no X server at all: DISPLAY stays empty
     # and X clients (Steam, etc.) fail with "Unable to open a connection to X".

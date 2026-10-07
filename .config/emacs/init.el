@@ -263,7 +263,7 @@
 
 (defun seli/style-tab-line (&optional frame)
   "Give tabs a flat appearance with a clear selected state in FRAME."
-(dolist (spec '((tab-bar :background "#2a273f" :foreground "#908caa"
+  (dolist (spec '((tab-bar :background "#2a273f" :foreground "#908caa"
                            :box nil :height 1.0 :extend t)
                   (tab-bar-tab :background "#393552" :foreground "#e0def4"
                                :weight semi-bold :box nil :underline nil)
@@ -299,13 +299,13 @@
                         :inherit nil
                         :background 'unspecified
                         :underline `(:color ,seli/active-line-indicator
-                                           :style line)
+                                            :style line)
                         :extend t)
     (set-face-attribute 'hl-line t
                         :inherit nil
                         :background 'unspecified
                         :underline `(:color ,seli/active-line-indicator
-                                           :style line)
+                                            :style line)
                         :extend t)
     (if (display-graphic-p frame)
         (progn
@@ -337,7 +337,7 @@
 (seli/apply-frame-appearance)
 
 (defconst seli/default-font-family "Monaspace Radon Var")
-(defconst seli/default-font-height 120)
+(defconst seli/default-font-height 100)
 (defconst seli/cjk-font-family "Cica")
 (defconst seli/icon-font-family "Symbols Nerd Font Mono")
 
@@ -546,7 +546,7 @@ soon as an emacsclient GUI frame is created."
     "oo" '(org-open-at-point :which-key "open link")
     "oi" '(org-toggle-inline-images :which-key "toggle images")))
 
-(global-set-key (kbd "C-s") #'save-buffer)
+;; (global-set-key (kbd "C-s") #'save-buffer)
 
 ;;; Completion, search, and navigation
 
