@@ -784,6 +784,17 @@ identifiers."
 (when (and after-init-time (not seli/after-init-hooks-ran))
   (run-hooks 'after-init-hook))
 
+;;; Spell checking
+
+;; Jinx needs a native module linked against Enchant, so it comes from Nix
+;; (programs.emacs.extraPackages) rather than being compiled from ELPA here.
+(use-package jinx
+  :hook (after-init . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages))
+  :custom
+  (jinx-languages "en_US"))
+
 ;;; Org mode
 
 (defun seli/org-mode-defaults ()

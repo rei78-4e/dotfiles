@@ -322,6 +322,7 @@ in
       enable = true;
       package = pkgs.emacs-pgtk;
       extraPackages = epkgs: [
+        epkgs.jinx
         (epkgs.treesit-grammars.with-grammars (grammars: [
           grammars.tree-sitter-typst
         ]))
@@ -386,6 +387,11 @@ in
       "emacs" = {
         source = mkConfigLink "emacs";
         recursive = false;
+      };
+      # Enchant (used by Emacs's jinx) looks here for user dictionaries; the
+      # Emacs daemon's systemd environment may not carry XDG_DATA_DIRS.
+      "enchant/hunspell" = lib.mkIf (!standalone) {
+        source = "${pkgs.hunspellDicts.en_US}/share/hunspell";
       };
       "fastfetch" = {
         source = mkConfigLink "fastfetch";

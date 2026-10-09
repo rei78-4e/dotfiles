@@ -67,7 +67,7 @@ prefer-no-csd
 screenshot-path "~/Desktop/ScreenShot_%Y-%m-%d_at_%H_%M_%S.png"
 
 overview {
-    zoom 0.48
+    zoom 0.4
     backdrop-color "#777"
 }
 
