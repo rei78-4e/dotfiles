@@ -131,6 +131,8 @@
     "format-wifi": " {essid}",
     "format-ethernet": "󰈀 ETH",
     "format-disconnected": "󰖪 OFFLINE",
+    "interval": 2,
+    "tooltip-format-wifi": "{essid}\n󰇚 {bandwidthDownBits}/s  󰕒 {bandwidthUpBits}/s\n󰤨 {signalStrength}% ({signaldBm} dBm)  ·  {frequency} GHz",
     "max-length": 11,
     "on-click": "~/dotfiles/script/system_control.sh wifi"
   },

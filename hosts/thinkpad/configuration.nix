@@ -7,6 +7,34 @@
 }:
 let
   userHome = "/home/${userName}";
+  batteryNotifications = pkgs.writeShellScript "battery-notifications" ''
+    battery=/sys/class/power_supply/BAT0
+    lowest_bucket=
+
+    while true; do
+      if [ -r "$battery/capacity" ] && [ -r "$battery/status" ]; then
+        read -r capacity < "$battery/capacity"
+        read -r status < "$battery/status"
+
+        if [ "$status" = Discharging ]; then
+          # The bucket changes exactly at 90%, 80%, ... 10%.
+          bucket=$(( (capacity + 9) / 10 ))
+          if [ -n "$lowest_bucket" ] && [ "$bucket" -lt "$lowest_bucket" ]; then
+            threshold=$(( bucket * 10 ))
+            ${pkgs.libnotify}/bin/notify-send -a Battery -i battery-caution \
+              "Battery at $capacity%" "Charge has reached $threshold%."
+          fi
+          if [ -z "$lowest_bucket" ] || [ "$bucket" -lt "$lowest_bucket" ]; then
+            lowest_bucket=$bucket
+          fi
+        else
+          lowest_bucket=
+        fi
+      fi
+
+      ${pkgs.coreutils}/bin/sleep 15
+    done
+  '';
 in
 {
   imports = [
@@ -38,11 +66,17 @@ in
 
   hardware.enableAllFirmware = true;
 
-  services.tlp.settings = {
-    PLATFORM_PROFILE_ON_AC = lib.mkForce "performance";
-    CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
-    CPU_SCALING_GOVERNOR_ON_AC = "performance";
-    CPU_BOOST_ON_AC = 1;
+  systemd.user.services.battery-notifications = {
+    description = "Notify on each 10% battery drop";
+    wantedBy = [ "graphical-session.target" ];
+    unitConfig = {
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    serviceConfig = {
+      ExecStart = batteryNotifications;
+      Restart = "on-failure";
+    };
   };
 
   # Use level 1 on AC power, but keep stronger cooling until the CPU cools
@@ -138,12 +172,6 @@ in
   services.udisks2.enable = true;
   services.gvfs.enable = true;
 
-  services.logind.settings.Login = {
-    HandleLidSwitch = "ignore";
-    HandleLidSwitchExternalPower = "ignore";
-    HandleLidSwitchDocked = "ignore";
-  };
-
   services.fprintd.enable = true;
   security.pam.services = {
     # GDM runs gdm-fingerprint separately from gdm-password. Enabling
@@ -222,20 +250,22 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages;
 
-  # systemd records the swapfile's current offset in HibernateLocation (EFI).
-  # The initrd unlocks the root LUKS device and resumes before mounting ext4.
-  # Do not hard-code resume_offset: recreating the swapfile can change it.
   boot.initrd.systemd.enable = true;
+
+  # 蓋を閉じたら suspend-then-hibernate
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend-then-hibernate";
+    HandleLidSwitchExternalPower = "suspend-then-hibernate";
+    HandleLidSwitchDocked = "ignore";
+  };
+
   systemd.sleep.settings.Sleep = {
     AllowHibernation = true;
     AllowSuspendThenHibernate = true;
-    # If suspend-then-hibernate is requested manually, hibernate after 15 minutes.
     HibernateDelaySec = "15min";
     HibernateOnACPower = false;
   };
 
-  # The persistent boot default may point to another OS. Resume with the same
-  # boot entry/kernel that wrote the image, without changing that default.
   systemd.services.systemd-hibernate.serviceConfig.ExecStartPre = [
     "${pkgs.systemd}/bin/bootctl set-oneshot @current"
   ];

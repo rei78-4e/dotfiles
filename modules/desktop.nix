@@ -110,9 +110,24 @@ in
   programs.niri.enable = true;
 
   services.xserver.desktopManager.lxqt.enable = true;
+  services.desktopManager.plasma6.enable = true;
+  # Plasma also uses GNOME Keyring (see below); keep KWallet out of the way.
+  security.pam.services.login.kwallet.enable = lib.mkForce false;
+  security.pam.services.kde.kwallet.enable = lib.mkForce false;
 
-  # Use GNOME Keyring as Secret Service in both GNOME and niri sessions.
+  # Use GNOME Keyring as Secret Service in GNOME, Plasma and niri sessions.
   home-manager.sharedModules = [
+    {
+      # Disable KWallet so it never claims org.freedesktop.secrets.
+      xdg.configFile."kwalletrc".text = ''
+        [Wallet]
+        Enabled=false
+        First Use=false
+
+        [org.freedesktop.secrets]
+        apiEnabled=false
+      '';
+    }
     {
       xdg.dataFile."dbus-1/services/org.freedesktop.secrets.service".text = ''
         [D-BUS Service]
@@ -301,15 +316,7 @@ in
   };
   programs.virt-manager.enable = true;
 
-  services.tlp = {
-    enable = true;
-
-    settings = {
-      PLATFORM_PROFILE_ON_AC = "balanced";
-      PLATFORM_PROFILE_ON_BAT = "low-power";
-    };
-  };
-  services.power-profiles-daemon.enable = false;
+  services.power-profiles-daemon.enable = true;
 
   # Bluetooth
   hardware.bluetooth.enable = true;

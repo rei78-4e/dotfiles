@@ -8,6 +8,8 @@ spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
 spawn-at-startup "niri-float-sticky" "-title" "Picture in picture|Picture-in-Picture"
 spawn-at-startup "niri-window-hooks"
+spawn-at-startup "$HOME/dotfiles/script/waybar_overview.sh"
+
 
 output "DP-1" {
     mode "3840x2160"

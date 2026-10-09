@@ -81,3 +81,8 @@ config.local.fish
 /.config/obs-studio/basic/profiles/*/*
 !/.config/obs-studio/basic/profiles/*/basic.ini
 .config/opencode/service.json
+
+# Emacs runtime state written into the config dir
+.config/emacs/org-typst-inline/
+.config/emacs/projects.eld
+.config/emacs/tramp

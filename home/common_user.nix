@@ -30,6 +30,18 @@ let
     ];
   };
 
+  # Chromium/Electron pick KWallet when XDG_CURRENT_DESKTOP=KDE.  Pin them to
+  # GNOME Keyring so Plasma and niri share one secret store.
+  passwordStoreFlag = "--password-store=gnome-libsecret";
+  google-chrome = pkgs.google-chrome.override { commandLineArgs = passwordStoreFlag; };
+  chromium = pkgs.chromium.override { commandLineArgs = passwordStoreFlag; };
+  discord = pkgs.discord.override { commandLineArgs = passwordStoreFlag; };
+  slack = pkgs.slack.overrideAttrs (old: {
+    postFixup = (old.postFixup or "") + ''
+      wrapProgram $out/bin/slack --add-flags ${passwordStoreFlag}
+    '';
+  });
+
   emacsClient = pkgs.writeShellScriptBin "emacs" ''
     exec ${lib.getExe' pkgs.emacs-pgtk "emacsclient"} --create-frame "$@"
   '';
@@ -97,6 +109,7 @@ let
     helix-git
     tree-sitter
     zed-editor
+    vscodium
 
     # ===== TUI =====
     yazi
@@ -146,6 +159,8 @@ let
     clang-tools
     llvm
     lld
+    basedpyright
+    ruff
 
     tailscale
 
@@ -319,6 +334,8 @@ in
       client.enable = false;
       extraOptions = [
         "--no-init-file"
+        "--load"
+        "${dotfilesDir}/.config/emacs/early-init.el"
         "--load"
         "${dotfilesDir}/.config/emacs/init.el"
       ];

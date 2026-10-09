@@ -21,7 +21,6 @@
 
 (defconst seli/opaque-ui-background "#2a273f")
 (defconst seli/opaque-ui-background-active "#393552")
-(defconst seli/active-line-indicator "#56526e")
 (defconst seli/buffer-alpha-background 60
   "Frame background opacity, matching Kitty's 0.6 background opacity.")
 
@@ -190,7 +189,6 @@
 
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers-type 'relative)
-(global-hl-line-mode 1)
 (column-number-mode 1)
 (size-indication-mode 1)
 (show-paren-mode 1)
@@ -234,7 +232,6 @@
     line-number-current-line
     vertical-border
     internal-border
-    hl-line
     fill-column-indicator
     display-fill-column-indicator)
   "Buffer faces that should inherit the transparent frame background.")
@@ -293,20 +290,6 @@
       (when (facep face)
         (set-face-attribute face frame :background 'unspecified)
         (set-face-attribute face t :background 'unspecified)))
-    ;; Faces cannot have their own alpha value.  Keep `hl-line' transparent
-    ;; and mark the active line without putting an opaque block behind text.
-    (set-face-attribute 'hl-line frame
-                        :inherit nil
-                        :background 'unspecified
-                        :underline `(:color ,seli/active-line-indicator
-                                            :style line)
-                        :extend t)
-    (set-face-attribute 'hl-line t
-                        :inherit nil
-                        :background 'unspecified
-                        :underline `(:color ,seli/active-line-indicator
-                                            :style line)
-                        :extend t)
     (if (display-graphic-p frame)
         (progn
           (set-frame-parameter frame 'alpha '(100 . 100))
@@ -386,7 +369,7 @@ soon as an emacsclient GUI frame is created."
       tab-line-separator " "
       tab-line-tab-name-function #'seli/tab-line-buffer-name)
 
-(menu-bar-mode 1)
+(menu-bar-mode -1)
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
 (tab-bar-mode 1)
@@ -409,19 +392,6 @@ soon as an emacsclient GUI frame is created."
   (doom-modeline-height 22)
   (doom-modeline-buffer-file-name-style 'auto)
   (doom-modeline-icon t))
-
-;; Doom Modeline renders this in its buffer-position segment.  Keep animation
-;; disabled: the cat still tracks point through the buffer without a timer
-;; continuously redisplaying every frame.
-(use-package nyan-mode
-  :after doom-modeline
-  :demand t
-  :custom
-  (nyan-bar-length 35)
-  (nyan-wavy-trail t)
-  (nyan-animate-nyancat nil)
-  :config
-  (nyan-mode 1))
 
 (use-package which-key
   :ensure nil
@@ -460,15 +430,17 @@ soon as an emacsclient GUI frame is created."
 
 (use-package evil-escape
   :after evil
+  :demand t
   :custom
   (evil-escape-key-sequence "jj")
-  (evil-escape-delay 0.25)
+  (evil-escape-delay 0.2)
   (evil-escape-excluded-states '(normal visual replace operator motion emacs))
   :config
   (evil-escape-mode 1))
 
 (use-package evil-collection
   :after evil
+  :demand t
   :config
   (evil-collection-init))
 
@@ -759,6 +731,8 @@ identifiers."
   (dolist (mode '(js-mode js-ts-mode json-mode json-ts-mode css-mode css-ts-mode
                           typescript-ts-mode tsx-ts-mode))
     (setf (alist-get mode apheleia-mode-alist) 'biome))
+  (dolist (mode '(python-mode python-ts-mode))
+    (setf (alist-get mode apheleia-mode-alist) 'ruff))
   ;; The scratchpad is a titled frame in the regular daemon, not a separate
   ;; process, so inhibit each operation according to the selected frame.
   (add-to-list 'apheleia-skip-functions #'seli/scratchpad-frame-p)
@@ -774,6 +748,8 @@ identifiers."
          (go-mode . eglot-ensure)
          (zig-mode . eglot-ensure)
          (typst-ts-mode . eglot-ensure)
+         (python-mode . eglot-ensure)
+         (python-ts-mode . eglot-ensure)
          (c-mode . eglot-ensure)
          (c++-mode . eglot-ensure)
          (js-mode . eglot-ensure)
@@ -786,6 +762,7 @@ identifiers."
              ((go-mode go-ts-mode) . ("gopls"))
              ((zig-mode zig-ts-mode) . ("zls"))
              ((typst-ts-mode) . ("tinymist"))
+             ((python-mode python-ts-mode) . ("basedpyright-langserver" "--stdio"))
              ((c-mode c++-mode c-ts-mode c++-ts-mode) . ("clangd"))
              ((js-mode js-ts-mode json-mode json-ts-mode css-mode css-ts-mode
                        typescript-ts-mode tsx-ts-mode) . ("biome" "lsp-proxy"))))
@@ -904,375 +881,373 @@ identifiers."
   (org-appear-autoentities t)
   (org-appear-autosubmarkers t))
 
+;; Render Typst math and @@typst:...@@ snippets inline, revealing the source
+;; with the same rules as org-appear.
+(use-package org-typst-inline
+  :vc (:url "https://github.com/rei78-4e/org-typst-inline" :rev :newest)
+  :hook (org-mode . org-typst-inline-mode)
+  :custom
+  (org-typst-inline-scale 2)
+  (org-typst-inline-display-align 'left))
+
 ;;; Git
 
-(use-package magit
-  :bind ("C-x g" . magit-status))
+  (use-package magit
+    :bind ("C-x g" . magit-status))
 
-(defun seli/diff-hl-enable-gui-margin (&optional frame)
-  "Show Git change markers beside line numbers in graphical FRAMEs."
-  (when (display-graphic-p frame)
-    (diff-hl-margin-mode 1)))
+  (defun seli/diff-hl-enable-gui-margin (&optional frame)
+    "Show Git change markers beside line numbers in graphical FRAMEs."
+    (when (display-graphic-p frame)
+      (diff-hl-margin-mode 1)))
 
-(use-package diff-hl
-  :demand t
-  :config
-  ;; Update markers while editing as well as after saving.  `diff-hl-margin-mode'
-  ;; puts them in the left margin, next to the line-number column.
-  (global-diff-hl-mode 1)
-  (diff-hl-flydiff-mode 1)
-  (seli/diff-hl-enable-gui-margin)
-  (add-hook 'after-make-frame-functions #'seli/diff-hl-enable-gui-margin)
-  (with-eval-after-load 'magit
-    (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
+  (use-package diff-hl
+    :demand t
+    :config
+    ;; Update markers while editing as well as after saving.  `diff-hl-margin-mode'
+    ;; puts them in the left margin, next to the line-number column.
+    (global-diff-hl-mode 1)
+    (diff-hl-flydiff-mode 1)
+    (seli/diff-hl-enable-gui-margin)
+    (add-hook 'after-make-frame-functions #'seli/diff-hl-enable-gui-margin)
+    (with-eval-after-load 'magit
+      (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
 
 ;;; Git status in the mode line
 
-(defconst seli/git-status-categories
-  '((conflict . "!")
-    (staged . "+")
-    (modified . "~")
-    (deleted . "-")
-    (renamed . "\u00bb")
-    (untracked . "?"))
-  "Ordered Git file states and the symbols shown in the mode line.")
+  (defconst seli/git-status-categories
+    '((conflict . "!")
+      (staged . "+")
+      (modified . "~")
+      (deleted . "-")
+      (renamed . "\u00bb")
+      (untracked . "?"))
+    "Ordered Git file states and the symbols shown in the mode line.")
 
-(defconst seli/git-status-faces
-  '((conflict . doom-modeline-urgent)
-    (staged . doom-modeline-info)
-    (modified . doom-modeline-warning)
-    (deleted . doom-modeline-urgent)
-    (renamed . doom-modeline-info)
-    (untracked . doom-modeline-info))
-  "Faces used for each Git file state in the mode line.")
+  (defconst seli/git-status-faces
+    '((conflict . doom-modeline-urgent)
+      (staged . doom-modeline-info)
+      (modified . doom-modeline-warning)
+      (deleted . doom-modeline-urgent)
+      (renamed . doom-modeline-info)
+      (untracked . doom-modeline-info))
+    "Faces used for each Git file state in the mode line.")
 
-(defvar-local seli/git-status-counts nil
-  "Per-category count of changed files in the current buffer's repository.")
+  (defvar-local seli/git-status-counts nil
+    "Per-category count of changed files in the current buffer's repository.")
 
-(defvar-local seli/git-status--process nil
-  "The Git process currently computing `seli/git-status-counts'.")
+  (defvar-local seli/git-status--process nil
+    "The Git process currently computing `seli/git-status-counts'.")
 
-(defun seli/git-status--inc (counts category)
-  "Increment the file count for CATEGORY in COUNTS."
-  (let ((cell (assq category counts)))
-    (setcdr cell (1+ (cdr cell)))))
+  (defun seli/git-status--inc (counts category)
+    "Increment the file count for CATEGORY in COUNTS."
+    (let ((cell (assq category counts)))
+      (setcdr cell (1+ (cdr cell)))))
 
-(defun seli/git-status--counts (output)
-  "Count changed files by state from `git status --porcelain' OUTPUT."
-  (let ((counts (mapcar (lambda (cell) (cons (car cell) 0))
-                        seli/git-status-categories)))
-    (dolist (line (split-string output "\n" t))
-      (when (>= (length line) 2)
-        (let ((x (aref line 0))
-              (y (aref line 1)))
-          (cond
-           ((and (eq x ??) (eq y ??))
-            (seli/git-status--inc counts 'untracked))
-           ((or (eq x ?U) (eq y ?U)
-                (and (eq x ?A) (eq y ?A))
-                (and (eq x ?D) (eq y ?D)))
-            (seli/git-status--inc counts 'conflict))
-           (t
-            (pcase x
-              ((or ?A ?M ?C ?D) (seli/git-status--inc counts 'staged))
-              (?R (seli/git-status--inc counts 'renamed)))
-            (pcase y
-              (?M (seli/git-status--inc counts 'modified))
-              (?D (seli/git-status--inc counts 'deleted))))))))
-    counts))
+  (defun seli/git-status--counts (output)
+    "Count changed files by state from `git status --porcelain' OUTPUT."
+    (let ((counts (mapcar (lambda (cell) (cons (car cell) 0))
+                          seli/git-status-categories)))
+      (dolist (line (split-string output "\n" t))
+        (when (>= (length line) 2)
+          (let ((x (aref line 0))
+                (y (aref line 1)))
+            (cond
+             ((and (eq x ??) (eq y ??))
+              (seli/git-status--inc counts 'untracked))
+             ((or (eq x ?U) (eq y ?U)
+                  (and (eq x ?A) (eq y ?A))
+                  (and (eq x ?D) (eq y ?D)))
+              (seli/git-status--inc counts 'conflict))
+             (t
+              (pcase x
+                ((or ?A ?M ?C ?D) (seli/git-status--inc counts 'staged))
+                (?R (seli/git-status--inc counts 'renamed)))
+              (pcase y
+                (?M (seli/git-status--inc counts 'modified))
+                (?D (seli/git-status--inc counts 'deleted))))))))
+      counts))
 
-(defun seli/git-status-refresh ()
-  "Recompute the cached Git file counts for the current buffer."
-  (when (process-live-p seli/git-status--process)
-    (delete-process seli/git-status--process))
-  (setq seli/git-status--process nil
-        seli/git-status-counts nil)
-  (when-let* ((file buffer-file-name)
-              ((not (file-remote-p file)))
-              ((locate-dominating-file file ".git")))
-    (let ((buffer (current-buffer))
-          (output ""))
-      (setq seli/git-status--process
-            (make-process
-             :name "seli-git-status"
-             :noquery t
-             :command '("git" "--no-optional-locks" "status" "--porcelain")
-             :filter (lambda (_process chunk)
-                       (setq output (concat output chunk)))
-             :sentinel (lambda (process _event)
-                         (when (and (eq (process-status process) 'exit)
-                                    (zerop (process-exit-status process))
-                                    (buffer-live-p buffer))
-                           (with-current-buffer buffer
-                             (setq seli/git-status-counts
-                                   (seli/git-status--counts output))
-                             (force-mode-line-update)))))))))
+  (defun seli/git-status-refresh ()
+    "Recompute the cached Git file counts for the current buffer."
+    (when (process-live-p seli/git-status--process)
+      (delete-process seli/git-status--process))
+    (setq seli/git-status--process nil
+          seli/git-status-counts nil)
+    (when-let* ((file buffer-file-name)
+                ((not (file-remote-p file)))
+                ((locate-dominating-file file ".git")))
+      (let ((buffer (current-buffer))
+            (output ""))
+        (setq seli/git-status--process
+              (make-process
+               :name "seli-git-status"
+               :noquery t
+               :command '("git" "--no-optional-locks" "status" "--porcelain")
+               :filter (lambda (_process chunk)
+                         (setq output (concat output chunk)))
+               :sentinel (lambda (process _event)
+                           (when (and (eq (process-status process) 'exit)
+                                      (zerop (process-exit-status process))
+                                      (buffer-live-p buffer))
+                             (with-current-buffer buffer
+                               (setq seli/git-status-counts
+                                     (seli/git-status--counts output))
+                               (force-mode-line-update)))))))))
 
-(defun seli/git-status--kill ()
-  "Stop a running Git status process when its buffer is killed."
-  (when (process-live-p seli/git-status--process)
-    (delete-process seli/git-status--process)))
+  (defun seli/git-status--kill ()
+    "Stop a running Git status process when its buffer is killed."
+    (when (process-live-p seli/git-status--process)
+      (delete-process seli/git-status--process)))
 
-(add-hook 'find-file-hook #'seli/git-status-refresh)
-(add-hook 'after-save-hook #'seli/git-status-refresh)
-(add-hook 'kill-buffer-hook #'seli/git-status--kill)
-(advice-add #'vc-refresh-state :after #'seli/git-status-refresh)
+  (add-hook 'find-file-hook #'seli/git-status-refresh)
+  (add-hook 'after-save-hook #'seli/git-status-refresh)
+  (add-hook 'kill-buffer-hook #'seli/git-status--kill)
+  (advice-add #'vc-refresh-state :after #'seli/git-status-refresh)
 
-(defconst seli/evil-state-faces
-  '((normal . doom-modeline-evil-normal-state)
-    (emacs . doom-modeline-evil-emacs-state)
-    (insert . doom-modeline-evil-insert-state)
-    (motion . doom-modeline-evil-motion-state)
-    (visual . doom-modeline-evil-visual-state)
-    (operator . doom-modeline-evil-operator-state)
-    (replace . doom-modeline-evil-replace-state))
-  "Faces used for each Evil state in the mode line.")
+  (defconst seli/evil-state-faces
+    '((normal . doom-modeline-evil-normal-state)
+      (emacs . doom-modeline-evil-emacs-state)
+      (insert . doom-modeline-evil-insert-state)
+      (motion . doom-modeline-evil-motion-state)
+      (visual . doom-modeline-evil-visual-state)
+      (operator . doom-modeline-evil-operator-state)
+      (replace . doom-modeline-evil-replace-state))
+    "Faces used for each Evil state in the mode line.")
 
-(defconst seli/evil-state-names
-  '((normal . "NORMAL")
-    (emacs . "EMACS")
-    (insert . "INSERT")
-    (motion . "MOTION")
-    (visual . "VISUAL")
-    (operator . "OPERATOR")
-    (replace . "REPLACE"))
-  "Readable names for each Evil state, shown as text in the mode line.")
+  (defconst seli/evil-state-names
+    '((normal . "NORMAL")
+      (emacs . "EMACS")
+      (insert . "INSERT")
+      (motion . "MOTION")
+      (visual . "VISUAL")
+      (operator . "OPERATOR")
+      (replace . "REPLACE"))
+    "Readable names for each Evil state, shown as text in the mode line.")
 
-(with-eval-after-load 'doom-modeline
-  (doom-modeline-def-segment git-status
-    "Displays Git file-change counts, e.g. `~8 -70'."
-    (when seli/git-status-counts
-      (let ((parts
-             (delq nil
-                   (mapcar
-                    (lambda (cell)
-                      (let* ((category (car cell))
-                             (count (cdr (assq category seli/git-status-counts))))
-                        (when (and count (> count 0))
-                          (propertize (format "%s%d" (cdr cell) count)
-                                      'face (cdr (assq category seli/git-status-faces))))))
-                    seli/git-status-categories))))
-        (when parts
-          (concat (doom-modeline-spc) (mapconcat #'identity parts " "))))))
+  (with-eval-after-load 'doom-modeline
+    (doom-modeline-def-segment git-status
+      "Displays Git file-change counts, e.g. `~8 -70'."
+      (when seli/git-status-counts
+        (let ((parts
+               (delq nil
+                     (mapcar
+                      (lambda (cell)
+                        (let* ((category (car cell))
+                               (count (cdr (assq category seli/git-status-counts))))
+                          (when (and count (> count 0))
+                            (propertize (format "%s%d" (cdr cell) count)
+                                        'face (cdr (assq category seli/git-status-faces))))))
+                      seli/git-status-categories))))
+          (when parts
+            (concat (doom-modeline-spc) (mapconcat #'identity parts " "))))))
 
-  (doom-modeline-def-segment evil-state
-    "Displays the current Evil state as text, e.g. NORMAL."
-    (when (bound-and-true-p evil-local-mode)
-      (let ((name (or (cdr (assq evil-state seli/evil-state-names))
-                      (upcase (symbol-name evil-state))))
-            (face (or (cdr (assq evil-state seli/evil-state-faces))
-                      'doom-modeline-evil-user-state)))
-        (concat (doom-modeline-spc)
-                (propertize name 'face face)
-                (doom-modeline-spc)))))
+    (doom-modeline-def-segment evil-state
+      "Displays the current Evil state as text, e.g. NORMAL."
+      (when (bound-and-true-p evil-local-mode)
+        (let ((name (or (cdr (assq evil-state seli/evil-state-names))
+                        (upcase (symbol-name evil-state))))
+              (face (or (cdr (assq evil-state seli/evil-state-faces))
+                        'doom-modeline-evil-user-state)))
+          (concat (doom-modeline-spc)
+                  (propertize name 'face face)
+                  (doom-modeline-spc)))))
 
-  (doom-modeline-def-segment nyan
-    "Displays the Nyan cat progress indicator on its own."
-    (when (bound-and-true-p nyan-mode)
-      (concat (doom-modeline-spc) (nyan-create) (doom-modeline-spc))))
-
-  (doom-modeline-def-segment position
-    "Displays line/column and percentage without the Nyan cat."
-    (let ((nyan-mode nil))
-      (doom-modeline-segment--buffer-position)))
-
-  ;; Mode-line layout:
-  ;; left  : evil state, Git branch, changed-file counts, path
-  ;; right : lang, file size, Nyan cat, buffer position
-  (doom-modeline-def-modeline 'main
-    '(evil-state
-      vcs
-      git-status
-      buffer-info)
-    '(major-mode
-      buffer-size
-      nyan
-      position)))
+    ;; Mode-line layout:
+    ;; left  : evil state, Git branch, changed-file counts, path
+    ;; right : lang, file size, buffer position
+    (doom-modeline-def-modeline 'main
+      '(evil-state
+        vcs
+        git-status
+        buffer-info)
+      '(major-mode
+        buffer-size
+        buffer-position)))
 
 ;;; Files
 
-(defun seli/dired-find-file-in-new-tab ()
-  "Visit a file at point in a new tab, or a directory in the current tab."
-  (interactive)
-  (let ((file (dired-get-file-for-visit)))
-    (if (file-directory-p file)
-        (dired-find-file)
-      (tab-new)
-      (find-file file))))
+  (defun seli/dired-find-file-in-new-tab ()
+    "Visit a file at point in a new tab, or a directory in the current tab."
+    (interactive)
+    (let ((file (dired-get-file-for-visit)))
+      (if (file-directory-p file)
+          (dired-find-file)
+        (tab-new)
+        (find-file file))))
 
-(use-package dired
-  :ensure nil
-  :hook (dired-mode . dired-hide-details-mode)
-  :custom
-  (dired-listing-switches "-alh --group-directories-first")
-  :config
-  (with-eval-after-load 'evil
-    (evil-define-key 'normal dired-mode-map
-      (kbd "RET") #'seli/dired-find-file-in-new-tab
-      (kbd "<return>") #'seli/dired-find-file-in-new-tab
-      (kbd "l") #'seli/dired-find-file-in-new-tab
-      (kbd "h") #'dired-up-directory
-      (kbd "^") #'dired-up-directory
-      (kbd "q") #'quit-window)))
+  (use-package dired
+    :ensure nil
+    :hook (dired-mode . dired-hide-details-mode)
+    :custom
+    (dired-listing-switches "-alh --group-directories-first")
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key 'normal dired-mode-map
+        (kbd "RET") #'seli/dired-find-file-in-new-tab
+        (kbd "<return>") #'seli/dired-find-file-in-new-tab
+        (kbd "l") #'seli/dired-find-file-in-new-tab
+        (kbd "h") #'dired-up-directory
+        (kbd "^") #'dired-up-directory
+        (kbd "q") #'quit-window)))
 
 ;;; Final local customizations
 
-(when (file-exists-p custom-file)
-  (load custom-file nil t))
+  (when (file-exists-p custom-file)
+    (load custom-file nil t))
 
 ;;; capture
 
-(require 'org)
-(require 'org-id)
-(require 'vc-git)
+  (require 'org)
+  (require 'org-id)
+  (require 'vc-git)
 
-(setq org-default-notes-file "~/org/inbox.org")
-(setq org-agenda-files
-      (when (file-directory-p org-directory)
-        (directory-files-recursively org-directory "\\.org$")))
-(setq org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w)" "|" "NOTING(n)" "DONE(d)" "CANCELLED(c)")))
+  (setq org-default-notes-file "~/org/inbox.org")
+  (setq org-agenda-files
+        (when (file-directory-p org-directory)
+          (directory-files-recursively org-directory "\\.org$")))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "WAIT(w)" "|" "NOTING(n)" "DONE(d)" "CANCELLED(c)")))
 
-(defvar seli/org-inbox-file (expand-file-name "inbox.org" org-directory)
-  "The temporary Org inbox file.")
+  (defvar seli/org-inbox-file (expand-file-name "inbox.org" org-directory)
+    "The temporary Org inbox file.")
 
-(defvar seli/org-notes-file (expand-file-name "notes.org" org-directory)
-  "The permanent Org notes file.")
+  (defvar seli/org-notes-file (expand-file-name "notes.org" org-directory)
+    "The permanent Org notes file.")
 
-(defun seli/org-inbox-subtree-to-notes ()
-  "Move the Inbox subtree at point into notes.org as a level-one entry.
+  (defun seli/org-inbox-subtree-to-notes ()
+    "Move the Inbox subtree at point into notes.org as a level-one entry.
 
 The source subtree is replaced with an ID link.  The destination root heading
 is always level one; its former TODO state, priority, and tags are omitted.
 Child headings keep their relative depth."
-  (interactive)
-  (unless (derived-mode-p 'org-mode)
-    (user-error "This command is only available in Org buffers"))
-  (unless (and buffer-file-name
-               (file-equal-p buffer-file-name seli/org-inbox-file))
-    (user-error "This command only moves headings from %s" seli/org-inbox-file))
-  (org-back-to-heading t)
-  (let* ((source-buffer (current-buffer))
-         (title (org-get-heading t t t t))
-         (id (org-id-get-create))
-         (level (org-outline-level))
-         (begin (point))
-         (end (save-excursion (org-end-of-subtree t t)))
-         (subtree (buffer-substring-no-properties begin end))
-         (first-newline (or (string-match "\n" subtree) (length subtree)))
-         (body (substring subtree first-newline))
-         (notes-subtree
-          (concat
-           "* " title
-           (replace-regexp-in-string
-            "^\\(\\*+\\) "
-            (lambda (heading)
-              (let ((stars (car (split-string heading " "))))
-                (concat (make-string (max 1 (1+ (- (length stars) level))) ?*) " ")))
-            body)))
-         (link (format "[[id:%s][%s]]" id title)))
-    (with-current-buffer (find-file-noselect seli/org-notes-file)
-      (goto-char (point-max))
-      (unless (bolp) (insert "\n"))
-      (unless (bobp) (insert "\n"))
-      (insert notes-subtree)
-      (unless (bolp) (insert "\n"))
-      (save-buffer))
-    (org-id-add-location id seli/org-notes-file)
-    (with-current-buffer source-buffer
-      (save-excursion
-        (goto-char begin)
-        (delete-region begin end)
-        (insert (make-string level ?*) " " link "\n"))
-      (save-buffer))
-    (message "Moved \"%s\" to notes.org" title)))
+    (interactive)
+    (unless (derived-mode-p 'org-mode)
+      (user-error "This command is only available in Org buffers"))
+    (unless (and buffer-file-name
+                 (file-equal-p buffer-file-name seli/org-inbox-file))
+      (user-error "This command only moves headings from %s" seli/org-inbox-file))
+    (org-back-to-heading t)
+    (let* ((source-buffer (current-buffer))
+           (title (org-get-heading t t t t))
+           (id (org-id-get-create))
+           (level (org-outline-level))
+           (begin (point))
+           (end (save-excursion (org-end-of-subtree t t)))
+           (subtree (buffer-substring-no-properties begin end))
+           (first-newline (or (string-match "\n" subtree) (length subtree)))
+           (body (substring subtree first-newline))
+           (notes-subtree
+            (concat
+             "* " title
+             (replace-regexp-in-string
+              "^\\(\\*+\\) "
+              (lambda (heading)
+                (let ((stars (car (split-string heading " "))))
+                  (concat (make-string (max 1 (1+ (- (length stars) level))) ?*) " ")))
+              body)))
+           (link (format "[[id:%s][%s]]" id title)))
+      (with-current-buffer (find-file-noselect seli/org-notes-file)
+        (goto-char (point-max))
+        (unless (bolp) (insert "\n"))
+        (unless (bobp) (insert "\n"))
+        (insert notes-subtree)
+        (unless (bolp) (insert "\n"))
+        (save-buffer))
+      (org-id-add-location id seli/org-notes-file)
+      (with-current-buffer source-buffer
+        (save-excursion
+          (goto-char begin)
+          (delete-region begin end)
+          (insert (make-string level ?*) " " link "\n"))
+        (save-buffer))
+      (message "Moved \"%s\" to notes.org" title)))
 
-(define-key org-mode-map (kbd "C-c C-x n") #'seli/org-inbox-subtree-to-notes)
+  (define-key org-mode-map (kbd "C-c C-x n") #'seli/org-inbox-subtree-to-notes)
 
-(defvar seli/org-capture-git-queue nil
-  "Capture files waiting to be committed as (REPOSITORY . FILE) pairs.")
+  (defvar seli/org-capture-git-queue nil
+    "Capture files waiting to be committed as (REPOSITORY . FILE) pairs.")
 
-(defvar seli/org-capture-git-process nil
-  "The Git process currently handling an Org capture commit.")
+  (defvar seli/org-capture-git-process nil
+    "The Git process currently handling an Org capture commit.")
 
-(defun seli/org-capture-git-start (repository file step command)
-  "Run Git COMMAND asynchronously for FILE in REPOSITORY at STEP."
-  (let ((default-directory repository)
-        (process-environment (cons "GIT_TERMINAL_PROMPT=0" process-environment)))
-    (setq seli/org-capture-git-process
-          (make-process
-           :name "org-capture-git"
-           :buffer (get-buffer-create " *org-capture-git*")
-           :command command
-           :noquery t
-           :sentinel #'seli/org-capture-git-sentinel))
-    (process-put seli/org-capture-git-process 'repository repository)
-    (process-put seli/org-capture-git-process 'file file)
-    (process-put seli/org-capture-git-process 'step step)))
+  (defun seli/org-capture-git-start (repository file step command)
+    "Run Git COMMAND asynchronously for FILE in REPOSITORY at STEP."
+    (let ((default-directory repository)
+          (process-environment (cons "GIT_TERMINAL_PROMPT=0" process-environment)))
+      (setq seli/org-capture-git-process
+            (make-process
+             :name "org-capture-git"
+             :buffer (get-buffer-create " *org-capture-git*")
+             :command command
+             :noquery t
+             :sentinel #'seli/org-capture-git-sentinel))
+      (process-put seli/org-capture-git-process 'repository repository)
+      (process-put seli/org-capture-git-process 'file file)
+      (process-put seli/org-capture-git-process 'step step)))
 
-(defun seli/org-capture-git-run-next ()
-  "Start the next queued capture commit, if any."
-  (unless (process-live-p seli/org-capture-git-process)
-    (when-let* ((entry (pop seli/org-capture-git-queue))
-                (repository (car entry))
-                (file (cdr entry)))
-      (seli/org-capture-git-start
-       repository file 'add (list "git" "add" "--" file)))))
-
-(defun seli/org-capture-git-sentinel (process _event)
-  "Continue PROCESS's asynchronous add, check, and commit sequence."
-  (when (memq (process-status process) '(exit signal))
-    (let ((repository (process-get process 'repository))
-          (file (process-get process 'file))
-          (step (process-get process 'step))
-          (status (process-exit-status process)))
-      (setq seli/org-capture-git-process nil)
-      (cond
-       ((not (zerop status))
-        ;; `git diff --quiet' uses status 1 to report staged changes.
-        (if (and (eq step 'diff) (= status 1))
-            (seli/org-capture-git-start
-             repository file 'commit
-             (list "git" "commit" "-m"
-                   (format "org capture: %s" (format-time-string "%F %R"))
-                   "--" file))
-          (message "Org capture Git %s failed for %s (exit %d)"
-                   step file status)
-          (seli/org-capture-git-run-next)))
-       ((eq step 'add)
+  (defun seli/org-capture-git-run-next ()
+    "Start the next queued capture commit, if any."
+    (unless (process-live-p seli/org-capture-git-process)
+      (when-let* ((entry (pop seli/org-capture-git-queue))
+                  (repository (car entry))
+                  (file (cdr entry)))
         (seli/org-capture-git-start
-         repository file 'diff (list "git" "diff" "--cached" "--quiet" "--" file)))
-       ((eq step 'diff)
-        (message "Org capture: no Git changes to commit for %s" file)
-        (seli/org-capture-git-run-next))
-       ((eq step 'commit)
-        (message "Org capture committed %s" file)
-        (seli/org-capture-git-run-next))))))
+         repository file 'add (list "git" "add" "--" file)))))
 
-(defun seli/org-capture-queue-git-commit ()
-  "Asynchronously commit the file written by a finalized Org capture."
-  (unless org-note-abort
-    (when-let* ((file (buffer-file-name (org-capture-get :buffer)))
-                (repository (vc-git-root file)))
-      (let ((entry (cons repository (file-relative-name file repository))))
-        (unless (member entry seli/org-capture-git-queue)
-          (push entry seli/org-capture-git-queue))
-        (seli/org-capture-git-run-next)))))
+  (defun seli/org-capture-git-sentinel (process _event)
+    "Continue PROCESS's asynchronous add, check, and commit sequence."
+    (when (memq (process-status process) '(exit signal))
+      (let ((repository (process-get process 'repository))
+            (file (process-get process 'file))
+            (step (process-get process 'step))
+            (status (process-exit-status process)))
+        (setq seli/org-capture-git-process nil)
+        (cond
+         ((not (zerop status))
+          ;; `git diff --quiet' uses status 1 to report staged changes.
+          (if (and (eq step 'diff) (= status 1))
+              (seli/org-capture-git-start
+               repository file 'commit
+               (list "git" "commit" "-m"
+                     (format "org capture: %s" (format-time-string "%F %R"))
+                     "--" file))
+            (message "Org capture Git %s failed for %s (exit %d)"
+                     step file status)
+            (seli/org-capture-git-run-next)))
+         ((eq step 'add)
+          (seli/org-capture-git-start
+           repository file 'diff (list "git" "diff" "--cached" "--quiet" "--" file)))
+         ((eq step 'diff)
+          (message "Org capture: no Git changes to commit for %s" file)
+          (seli/org-capture-git-run-next))
+         ((eq step 'commit)
+          (message "Org capture committed %s" file)
+          (seli/org-capture-git-run-next))))))
 
-(add-hook 'org-capture-after-finalize-hook #'seli/org-capture-queue-git-commit)
+  (defun seli/org-capture-queue-git-commit ()
+    "Asynchronously commit the file written by a finalized Org capture."
+    (unless org-note-abort
+      (when-let* ((file (buffer-file-name (org-capture-get :buffer)))
+                  (repository (vc-git-root file)))
+        (let ((entry (cons repository (file-relative-name file repository))))
+          (unless (member entry seli/org-capture-git-queue)
+            (push entry seli/org-capture-git-queue))
+          (seli/org-capture-git-run-next)))))
 
-(setq org-capture-templates
-      '(        ("t" "Todo" entry
-                 (file "~/org/inbox.org")
-                 "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n")
+  (add-hook 'org-capture-after-finalize-hook #'seli/org-capture-queue-git-commit)
 
-                ("n" "Note" entry
-                 (file "~/org/notes.org")
-                 "* %?\n%U\n")
+  (setq org-capture-templates
+        '(        ("t" "Todo" entry
+                   (file "~/org/inbox.org")
+                   "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n")
 
-                ("j" "Journal" plain
-                 (file+datetree "~/org/journal.org")
-                 "%?\n")))
+                  ("n" "Note" entry
+                   (file "~/org/notes.org")
+                   "* %?\n%U\n")
 
-(global-set-key (kbd "C-c c") #'org-capture)
-(global-set-key (kbd "C-c a") #'org-agenda)
+                  ("j" "Journal" plain
+                   (file+datetree "~/org/journal.org")
+                   "%?\n")))
+
+  (global-set-key (kbd "C-c c") #'org-capture)
+  (global-set-key (kbd "C-c a") #'org-agenda)
