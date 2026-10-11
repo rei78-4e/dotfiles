@@ -9,6 +9,9 @@ config = { typescript = { tsdk = "/home/rei/.cache/helix/astro-typescript/lib" }
 [language-server.lua-language-server.config.Lua.hint]
 arrayIndex = "Disable"
 
+[language-server.czls]
+command = "czls"
+
 [[language]]
 name = "moonbit"
 scope = "source.moonbit"
@@ -69,10 +72,6 @@ name = "css"
 formatter = { command = "biome", args = ["format", "--stdin-file-path", "%{buffer_name}"] }
 auto-format = true
 
-[[grammar]]
-name = "moonbit"
-source = { git = "https://github.com/moonbitlang/tree-sitter-moonbit", rev = "main" }
-
 [[language]]
 name = "clojure"
 auto-pairs = { '(' = ')', '{' = '}', '[' = ']', '"' = '"' }
@@ -87,3 +86,15 @@ formatter = { command = "biome", args = [
 ] }
 auto-format = true
 
+[[language]]
+name = "brass"
+file-types = ["cz"]
+language-servers = ["czls"]
+comment-token = "//"
+scope = "source.brass"
+auto-format = true
+roots = [".git"]
+
+[[grammar]]
+name = "moonbit"
+source = { git = "https://github.com/moonbitlang/tree-sitter-moonbit", rev = "main" }
