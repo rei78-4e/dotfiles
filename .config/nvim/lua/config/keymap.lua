@@ -112,3 +112,4 @@ vim.keymap.set("n", "<C-x>", function()
 end, { desc = "Decrement or toggle boolean" })
 
 vim.keymap.set("v", ":", [[:s/\v/g<Left><Left>]])
+vim.keymap.set("n", "ZZ", "<cmd>xa<CR>", { desc = "save all and quit" })

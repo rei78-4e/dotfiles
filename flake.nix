@@ -22,6 +22,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    wlmstr = {
+      url = "github:rei78-4e/wlmstr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zathura-gui = {
       url = "github:Uliboooo/zathura_thin_gui_wrapper";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,6 +53,12 @@
 
     nur = {
       url = "github:charmbracelet/nur";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Local checkout until flake.nix lands upstream (github:uint23/sxwm)
+    sxwm = {
+      url = "path:/home/rei/ghq/github.com/uint23/sxwm";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

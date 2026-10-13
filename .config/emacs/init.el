@@ -19,10 +19,10 @@
 (add-to-list 'display-buffer-alist
              '("\\`\\*Compile-Log\\*\\'" . (display-buffer-no-window)))
 
-(defconst seli/opaque-ui-background "#2a273f")
-(defconst seli/opaque-ui-background-active "#393552")
-(defconst seli/buffer-alpha-background 60
-  "Frame background opacity, matching Kitty's 0.6 background opacity.")
+(defconst seli/opaque-ui-background "#fffaf3")
+(defconst seli/opaque-ui-background-active "#f2e9e1")
+(defconst seli/buffer-alpha-background 100
+  "Frame background opacity, matching Kitty's opaque Rose Pine Dawn setup.")
 
 (defconst seli/instance-subdir
   (if (getenv "EMACS_SCRATCHPAD") "scratchpad/" "")
@@ -260,22 +260,22 @@
 
 (defun seli/style-tab-line (&optional frame)
   "Give tabs a flat appearance with a clear selected state in FRAME."
-  (dolist (spec '((tab-bar :background "#2a273f" :foreground "#908caa"
+  (dolist (spec '((tab-bar :background "#fffaf3" :foreground "#797593"
                            :box nil :height 1.0 :extend t)
-                  (tab-bar-tab :background "#393552" :foreground "#e0def4"
+                  (tab-bar-tab :background "#f2e9e1" :foreground "#575279"
                                :weight semi-bold :box nil :underline nil)
-                  (tab-bar-tab-inactive :background "#2a273f" :foreground "#908caa"
+                  (tab-bar-tab-inactive :background "#fffaf3" :foreground "#797593"
                                         :weight normal :box nil :underline nil)
-                  (tab-bar-tab-group-current :background "#2a273f" :foreground "#e0def4"
+                  (tab-bar-tab-group-current :background "#fffaf3" :foreground "#575279"
                                              :weight semi-bold :box nil)
-                  (tab-bar-tab-group-inactive :background "#2a273f" :foreground "#908caa"
+                  (tab-bar-tab-group-inactive :background "#fffaf3" :foreground "#797593"
                                               :weight normal :box nil)
-                  (tab-bar-tab-ungrouped :background "#2a273f" :foreground "#908caa"
+                  (tab-bar-tab-ungrouped :background "#fffaf3" :foreground "#797593"
                                          :box nil)
-                  (tab-line :background "#2a273f" :foreground "#908caa" :box nil :extend t)
-                  (tab-line-tab :background "#2a273f" :foreground "#908caa" :box nil)
-                  (tab-line-tab-inactive :background "#2a273f" :foreground "#908caa" :box nil)
-                  (tab-line-tab-current :background "#393552" :foreground "#e0def4"
+                  (tab-line :background "#fffaf3" :foreground "#797593" :box nil :extend t)
+                  (tab-line-tab :background "#fffaf3" :foreground "#797593" :box nil)
+                  (tab-line-tab-inactive :background "#fffaf3" :foreground "#797593" :box nil)
+                  (tab-line-tab-current :background "#f2e9e1" :foreground "#575279"
                                         :weight semi-bold :box nil :underline nil)))
     ;; Update the global face as well as FRAME.  This is necessary when Emacs
     ;; starts as a daemon: its initial frame is terminal-only, while the GUI
@@ -378,13 +378,13 @@ soon as an emacsclient GUI frame is created."
 ;; Load Org's faces before enabling the theme.  Otherwise faces created only
 ;; when Org loads (notably TODO/DONE) retain Emacs's bright default colors.
 (require 'org)
-(load-theme 'rose-pine-moon t)
+(load-theme 'rose-pine-dawn t)
 
 (defun seli/toggle-theme ()
   "Reload the configured theme."
   (interactive)
   (mapc #'disable-theme custom-enabled-themes)
-  (load-theme 'rose-pine-moon t))
+  (load-theme 'rose-pine-dawn t))
 
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)

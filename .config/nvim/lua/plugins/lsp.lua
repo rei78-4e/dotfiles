@@ -52,13 +52,8 @@ return {
       sources = {
         default = { "lsp", "path", "snippets", "buffer" },
         providers = {
-          -- copyright / date などの展開は blink 内蔵の snippets ソース。
-          -- 自前のものは `~/.config/nvim/snippets/*.json`（= dotfiles の .config/nvim/snippets）に置く。
-          -- ファイル名が filetype 名、`all.json` は全 filetype で候補に出る。
           snippets = {
             opts = {
-              -- friendly-snippets の global.json は自前の all.json と prefix が被るので外す
-              -- (copyright / date / time / uuid ... は all.json 側で定義)
               filter_snippets = function(_, file)
                 return not (file:match("friendly.snippets") and file:match("global%.json$"))
               end,

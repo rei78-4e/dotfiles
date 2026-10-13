@@ -292,9 +292,7 @@ window-rule {
         xray false
     }
 }
-workspace "stash" {
 
-}
 workspace "chats" {
     open-on-output "DP-1"
 }
@@ -524,10 +522,10 @@ binds {
     }
     // --- wallpapers ---
     Super+W {
-        spawn "noctalia" "msg" "wallpaper-next"
+        spawn-sh "if systemctl --user is-active -q noctalia.service; then noctalia msg wallpaper-next; else wlmstr next seq; fi"
     }
     Super+Shift+W {
-        spawn "noctalia" "msg" "wallpaper-previous"
+        spawn-sh "if systemctl --user is-active -q noctalia.service; then noctalia msg wallpaper-previous; else wlmstr next pre; fi"
     }
     Alt+W {
         spawn-sh "$HOME/dotfiles/script/change_wallpaper.sh"

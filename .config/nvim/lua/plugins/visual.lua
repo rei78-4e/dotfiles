@@ -58,9 +58,6 @@ return {
       -- Create user command for toggling
       vim.api.nvim_create_user_command("ToggleBackground", toggle_background, {})
 
-      -- Set keymap for toggling (Leader + tb = toggle background)
-      vim.keymap.set("n", "<leader>tb", toggle_background, { desc = "Toggle dark/light mode" })
-
       -- Neovim 0.12 queries the terminal background with OSC 11 before loading
       -- user config.  Preserve that result when the environment hint is absent
       -- (notably over SSH), and only override it when a terminal explicitly
@@ -73,6 +70,7 @@ return {
     end,
   },
   {
+    -- color code viewer
     "catgoose/nvim-colorizer.lua",
     event = { "BufReadPre", "BufNewFile" },
     opts = {
@@ -174,29 +172,6 @@ return {
       status_formatter = nil,
     },
     config = function(_, opts) require("gitsigns").setup(opts) end,
-  },
-  {
-    "HiPhish/rainbow-delimiters.nvim",
-    config = function()
-      local rainbow_delimiters = require("rainbow-delimiters")
-      vim.g.rainbow_delimiters = {
-        strategy = {
-          [""] = rainbow_delimiters.strategy["global"],
-        },
-        query = {
-          [""] = "rainbow-delimiters",
-        },
-        highlight = {
-          "RainbowDelimiterRed",
-          "RainbowDelimiterYellow",
-          "RainbowDelimiterBlue",
-          "RainbowDelimiterOrange",
-          "RainbowDelimiterGreen",
-          "RainbowDelimiterViolet",
-          "RainbowDelimiterCyan",
-        },
-      }
-    end,
   },
   {
     "kevinhwang91/nvim-ufo",

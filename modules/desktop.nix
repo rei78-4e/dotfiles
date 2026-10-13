@@ -110,24 +110,18 @@ in
   programs.niri.enable = true;
 
   services.xserver.desktopManager.lxqt.enable = true;
-  services.desktopManager.plasma6.enable = true;
-  # Plasma also uses GNOME Keyring (see below); keep KWallet out of the way.
-  security.pam.services.login.kwallet.enable = lib.mkForce false;
-  security.pam.services.kde.kwallet.enable = lib.mkForce false;
-
-  # Use GNOME Keyring as Secret Service in GNOME, Plasma and niri sessions.
-  home-manager.sharedModules = [
+  services.xserver.windowManager.session = [
     {
-      # Disable KWallet so it never claims org.freedesktop.secrets.
-      xdg.configFile."kwalletrc".text = ''
-        [Wallet]
-        Enabled=false
-        First Use=false
-
-        [org.freedesktop.secrets]
-        apiEnabled=false
+      name = "sxwm";
+      start = ''
+        ${inputs.sxwm.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/sxwm &
+        waitPID=$!
       '';
     }
+  ];
+
+  # Use GNOME Keyring as Secret Service in GNOME and niri sessions.
+  home-manager.sharedModules = [
     {
       xdg.dataFile."dbus-1/services/org.freedesktop.secrets.service".text = ''
         [D-BUS Service]
@@ -281,16 +275,12 @@ in
   };
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
-  security.pam.services.sddm.enableGnomeKeyring = true;
+  security.pam.services.gdm-password.enableGnomeKeyring = true;
 
   services.upower.enable = true;
 
   services.xserver.enable = true;
-  services.displayManager.gdm.enable = false;
-  services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = false;
-  };
+  services.displayManager.gdm.enable = true;
 
   services.keyd = {
     enable = true;

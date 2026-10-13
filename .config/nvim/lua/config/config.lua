@@ -16,6 +16,8 @@ vim.opt.breakindent = true
 vim.opt.showbreak = "⤷ "
 vim.opt.clipboard = "unnamedplus"
 
+vim.opt.scrolloff = 3
+
 -- SSH / tmux 越しではローカルの wl-copy/wl-paste が使えないので、OSC52 で
 -- クライアント端末 (kitty / ghostty) のクリップボードへ直接渡す。
 -- ローカル (コンソール) では従来どおり Wayland クリップボードを使う。

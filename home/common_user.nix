@@ -15,11 +15,13 @@ let
 
   system = pkgs.stdenv.hostPlatform.system;
 
+  wlmstr = inputs.wlmstr.packages.${system}.default;
   zathura-gui = inputs.zathura-gui.packages.${system}.default;
   niri-float-sticky = inputs.niri-float-sticky.packages.${system}.default;
   niri-scratchpad = inputs.niri-scratchpad.packages.${system}.default;
   niri-window-hooks = inputs.niri-window-hooks.packages.${system}.default;
   denki-yoho = inputs.denki-yoho.packages.${system}.default;
+  sxwm = inputs.sxwm.packages.${system}.default;
   helix-git = inputs.helix-git.packages.${system}.helix.override {
     grammarOverlays = [
       (_final: prev: {
@@ -30,8 +32,8 @@ let
     ];
   };
 
-  # Chromium/Electron pick KWallet when XDG_CURRENT_DESKTOP=KDE.  Pin them to
-  # GNOME Keyring so Plasma and niri share one secret store.
+  # Pin Chromium/Electron to GNOME Keyring; on niri they can't detect it and
+  # fall back to the unencrypted "basic" store.
   passwordStoreFlag = "--password-store=gnome-libsecret";
   google-chrome = pkgs.google-chrome.override { commandLineArgs = passwordStoreFlag; };
   chromium = pkgs.chromium.override { commandLineArgs = passwordStoreFlag; };
@@ -227,6 +229,7 @@ let
     vlc
     wiremix
     mpvpaper
+    wlmstr
     zathura-gui
     chromium
     geeqie
@@ -236,6 +239,7 @@ let
     niri-scratchpad
     niri-window-hooks
     denki-yoho
+    sxwm
     gnome-calendar
     thunderbird
     evolution
@@ -453,6 +457,10 @@ in
         source = mkConfigLink "noctalia";
         recursive = false;
       };
+      "wlmstr" = {
+        source = mkConfigLink "wlmstr";
+        recursive = false;
+      };
       "obs-studio" = {
         source = mkConfigLink "obs-studio";
         recursive = false;
@@ -497,6 +505,40 @@ in
         StandardOutput = "journal";
         StandardError = "journal";
       };
+    };
+
+    # awww.service (modules/desktop.nix) が動いている間だけ壁紙を回す。
+    # Noctalia 使用中は awww が Conflicts で止まるので ExecCondition でスキップする。
+    systemd.user.services.cycle_wallpaper = {
+      Unit = {
+        Description = "Cycle wallpaper with wlmstr";
+        After = [ "awww.service" ];
+      };
+
+      Service = {
+        Type = "oneshot";
+        ExecCondition = "${pkgs.systemd}/bin/systemctl --user is-active --quiet awww.service";
+        ExecStart = lib.escapeShellArgs [
+          (lib.getExe wlmstr)
+          "next"
+          "seq"
+        ];
+        # wlmstr は awww / mpvpaper を PATH から呼ぶ。
+        Environment = [ "PATH=/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin" ];
+        StandardOutput = "journal";
+        StandardError = "journal";
+      };
+    };
+
+    systemd.user.timers.cycle_wallpaper = {
+      Unit.Description = "Cycle wallpaper every 15 minutes";
+
+      Timer = {
+        OnCalendar = "*-*-* *:00,15,30,45:00";
+        Persistent = false;
+      };
+
+      Install.WantedBy = [ "timers.target" ];
     };
 
     systemd.user.services.cliphist-clean = {
