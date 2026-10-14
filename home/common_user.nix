@@ -70,14 +70,14 @@ let
       fi
 
       cd "$org_dir"
-      git pull
       git add .
 
       if ! git diff --cached --quiet; then
         changed_files_list="$(git diff --cached --name-only | paste -sd, -)"
-        git commit -m "org mode chagens: $changed_files_list"
+        git commit -m "org mode changes: $changed_files_list"
       fi
 
+      git pull --rebase
       git push
     '';
   };

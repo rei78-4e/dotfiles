@@ -2,7 +2,11 @@
 {
   # TERM と違い、任意の環境変数は明示的に許可しないと SSH セッションへ
   # 引き継がれない。Neovim などが端末の light/dark 判定に利用する。
-  services.openssh.settings.AcceptEnv = [ "TERM_BACKGROUND" ];
+  services.openssh.settings = {
+    AcceptEnv = [ "TERM_BACKGROUND" ];
+    PasswordAuthentication = false;
+    KbdInteractiveAuthentication = false;
+  };
 
   environment.systemPackages = with pkgs; [
     git

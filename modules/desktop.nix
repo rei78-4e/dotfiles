@@ -162,6 +162,8 @@ in
   ];
   xdg.portal.config.niri."org.freedesktop.impl.portal.Secret" = lib.mkForce "gnome-keyring";
   programs.hyprlock.enable = true;
+  # hyprlock force-enables hypridle; idle is handled by swayidle below.
+  services.hypridle.enable = lib.mkForce false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;

@@ -33,6 +33,6 @@
 
   # herdr is retained in the NixOS closure.
   home.packages = lib.optionals (!standalone) [
-    inputs.herdr.packages.${pkgs.system}.default
+    inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
