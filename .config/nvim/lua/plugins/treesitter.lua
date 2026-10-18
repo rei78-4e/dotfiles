@@ -16,6 +16,7 @@ return {
         "typescript",
         "rust",
         "org",
+        "typst",
       },
 
       highlight = {

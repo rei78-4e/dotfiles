@@ -41,6 +41,7 @@ in
     enable = true;
     type = "fcitx5";
     fcitx5.waylandFrontend = true;
+    fcitx5.addons = with pkgs; [ fcitx5-chewing ];
   };
   services.hazkey.enable = true;
   services.tailscale.enable = true;

@@ -21,7 +21,6 @@ let
   niri-scratchpad = inputs.niri-scratchpad.packages.${system}.default;
   niri-window-hooks = inputs.niri-window-hooks.packages.${system}.default;
   denki-yoho = inputs.denki-yoho.packages.${system}.default;
-  sxwm = inputs.sxwm.packages.${system}.default;
   helix-git = inputs.helix-git.packages.${system}.helix.override {
     grammarOverlays = [
       (_final: prev: {
@@ -239,7 +238,6 @@ let
     niri-scratchpad
     niri-window-hooks
     denki-yoho
-    sxwm
     gnome-calendar
     thunderbird
     evolution
@@ -532,6 +530,41 @@ in
 
     systemd.user.timers.cycle_wallpaper = {
       Unit.Description = "Cycle wallpaper every 15 minutes";
+
+      Timer = {
+        OnCalendar = "*-*-* *:00,15,30,45:00";
+        Persistent = false;
+      };
+
+      Install.WantedBy = [ "timers.target" ];
+    };
+
+    # GNOME セッション中だけ script/wallpaper_gnome.sh で壁紙を回す。
+    # ログイン時 (GNOME Shell 起動時) にも 1 回切り替える。
+    systemd.user.services.cycle_wallpaper_gnome = {
+      Unit = {
+        Description = "Cycle GNOME wallpaper";
+        After = [ "org.gnome.Shell@wayland.service" ];
+      };
+
+      Service = {
+        Type = "oneshot";
+        ExecCondition = "${pkgs.systemd}/bin/systemctl --user is-active --quiet org.gnome.Shell@wayland.service";
+        ExecStart = lib.escapeShellArgs [
+          (lib.getExe pkgs.bash)
+          "${dotfilesDir}/script/wallpaper_gnome.sh"
+        ];
+        # find / shuf / gsettings を PATH から呼ぶ。
+        Environment = [ "PATH=/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin" ];
+        StandardOutput = "journal";
+        StandardError = "journal";
+      };
+
+      Install.WantedBy = [ "org.gnome.Shell@wayland.service" ];
+    };
+
+    systemd.user.timers.cycle_wallpaper_gnome = {
+      Unit.Description = "Cycle GNOME wallpaper every 15 minutes";
 
       Timer = {
         OnCalendar = "*-*-* *:00,15,30,45:00";

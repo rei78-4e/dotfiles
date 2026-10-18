@@ -181,6 +181,12 @@ return {
     },
   },
   {
+    -- render typst math/code inline (kitty graphics protocol: kitty/ghostty)
+    "PartyWumpus/typst-concealer",
+    ft = "typst",
+    opts = {},
+  },
+  {
     "otnc/package-license-viewer",
     build = "npm ci && npm run compile:lsp",
     config = function()

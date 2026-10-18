@@ -56,12 +56,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Local checkout until flake.nix lands upstream (github:uint23/sxwm)
-    sxwm = {
-      url = "path:/home/rei/ghq/github.com/uint23/sxwm";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     helix-git = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";

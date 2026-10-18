@@ -35,6 +35,31 @@ let
       ${pkgs.coreutils}/bin/sleep 15
     done
   '';
+  # Resuming from s2idle often wedges this firmware, so never suspend on lid
+  # close: stay awake (locked) and hibernate once the lid has been closed on
+  # battery for 5 minutes. Short closes while moving resume instantly.
+  lidHibernate = pkgs.writeShellScript "lid-hibernate" ''
+    closed_for=0
+
+    while true; do
+      read -r _ lid < /proc/acpi/button/lid/LID/state
+      read -r ac < /sys/class/power_supply/AC/online
+      docked=$(${pkgs.systemd}/bin/busctl get-property org.freedesktop.login1 \
+        /org/freedesktop/login1 org.freedesktop.login1.Manager Docked)
+
+      if [ "$lid" = closed ] && [ "$ac" = 0 ] && [ "$docked" = "b false" ]; then
+        closed_for=$(( closed_for + 5 ))
+        if [ "$closed_for" -ge 300 ]; then
+          closed_for=0
+          ${pkgs.systemd}/bin/systemctl hibernate --check-inhibitors=no || true
+        fi
+      else
+        closed_for=0
+      fi
+
+      ${pkgs.coreutils}/bin/sleep 5
+    done
+  '';
 in
 {
   imports = [
@@ -185,6 +210,7 @@ in
     enable = true;
     type = "fcitx5";
     fcitx5.waylandFrontend = true;
+    fcitx5.addons = with pkgs; [ fcitx5-chewing ];
   };
   services.hazkey.enable = true;
   services.keyd.keyboards.default.ids = lib.mkForce [
@@ -267,42 +293,52 @@ in
       # Leave room for the hibernation image as well as ordinary swap use.
       # Apply size changes at boot, before this file becomes active swap.
       size = 16384;
-      # Prefer zram for ordinary swapping; keep disk swap for hibernation.
-      priority = 10;
     }
   ];
 
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-    memoryPercent = 50;
-    priority = 100;
+  # zswap instead of zram: when hibernation shrinks memory, zram swaps into RAM
+  # itself and image creation fails with -ENOMEM. zswap writes back to the disk swap.
+  boot.kernelParams = [
+    "zswap.enabled=1"
+    "zswap.compressor=zstd"
+    "zswap.max_pool_percent=25"
+  ];
+
+  # After a long s2idle the firmware SMI can wedge and an EFI runtime call hangs
+  # forever (soft lockup in efi_call_rts). Reboot instead of freezing silently.
+  boot.kernel.sysctl = {
+    "kernel.softlockup_panic" = 1;
+    "kernel.panic" = 10;
   };
+
+  # BIOS updates (LVFS)
+  services.fwupd.enable = true;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   boot.initrd.systemd.enable = true;
 
-  # 蓋を閉じたら suspend-then-hibernate
+  # 蓋を閉じたらロックだけ。バッテリーで5分閉じたままなら lid-hibernate が hibernate
   services.logind.settings.Login = {
-    HandleLidSwitch = "suspend-then-hibernate";
-    HandleLidSwitchExternalPower = "suspend-then-hibernate";
+    HandleLidSwitch = "lock";
+    HandleLidSwitchExternalPower = "lock";
     HandleLidSwitchDocked = "ignore";
   };
 
-  systemd.sleep.settings.Sleep = {
-    AllowHibernation = true;
-    AllowSuspendThenHibernate = true;
-    HibernateDelaySec = "15min";
-    HibernateOnACPower = false;
+  systemd.services.lid-hibernate = {
+    description = "Hibernate after the lid stays closed on battery";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = lidHibernate;
+      Restart = "always";
+    };
   };
 
+  systemd.sleep.settings.Sleep.AllowHibernation = true;
+
   systemd.services.systemd-hibernate.serviceConfig.ExecStartPre = [
-    "${pkgs.systemd}/bin/bootctl set-oneshot @current"
-  ];
-  systemd.services.systemd-suspend-then-hibernate.serviceConfig.ExecStartPre = [
     "${pkgs.systemd}/bin/bootctl set-oneshot @current"
   ];
 
