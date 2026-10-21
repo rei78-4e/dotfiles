@@ -1,0 +1,75 @@
+digraph flake_inputs {
+  graph [rankdir=LR, bgcolor="white", pad="0.4", nodesep="0.28",
+         ranksep="0.9", splines="spline", overlap="false",
+         fontname="Helvetica", fontsize=16, labelloc="t",
+         label="dotfiles: NixOS + flakes + Home Manager\nflake inputs · 24 nodes · 41 edges (solid = input, dashed* = follows)"];
+  node [shape="box", style="rounded,filled", fontname="Helvetica",
+        fontsize=10, margin="0.10,0.06", penwidth=1.0];
+  edge [color="#64748b", arrowsize=0.65, penwidth=0.8,
+        fontname="Helvetica", fontsize=8, fontcolor="#334155"];
+  "root" [label="dotfiles: NixOS + flakes + Home Manager\n(root)", fillcolor="#fecaca", color="#dc2626", tooltip="root"];
+  "niri-scratchpad" [label="argosnothing/niri-scratchpad-rs\nc78d7352", fillcolor="#bfdbfe", color="#2563eb", tooltip="niri-scratchpad"];
+  "nix-hazkey" [label="aster-void/nix-hazkey\n4f791a24", fillcolor="#bfdbfe", color="#2563eb", tooltip="nix-hazkey"];
+  "nur" [label="charmbracelet/nur\n5533ebb4", fillcolor="#bfdbfe", color="#2563eb", tooltip="nur"];
+  "helix-git" [label="helix-editor/helix\nba40e547", fillcolor="#bfdbfe", color="#2563eb", tooltip="helix-git"];
+  "jolt" [label="jordond/jolt\nd117bfb2", fillcolor="#bfdbfe", color="#2563eb", tooltip="jolt"];
+  "home-manager" [label="nix-community/home-manager\nec801317", fillcolor="#bfdbfe", color="#2563eb", tooltip="home-manager"];
+  "nixpkgs_3" [label="NixOS/nixpkgs\n02c087f3", fillcolor="#fef08a", color="#ca8a04", tooltip="nixpkgs_3"];
+  "nixpkgs-master" [label="NixOS/nixpkgs\n80831137", fillcolor="#fef08a", color="#ca8a04", tooltip="nixpkgs-master"];
+  "herdr" [label="ogulcancelik/herdr\n2ecf19a9", fillcolor="#bfdbfe", color="#2563eb", tooltip="herdr"];
+  "niri-float-sticky" [label="probeldev/niri-float-sticky\nb3e79bd9", fillcolor="#bfdbfe", color="#2563eb", tooltip="niri-float-sticky"];
+  "denki-yoho" [label="rei78-4e/denki-yoho\n7d5e7f9d", fillcolor="#bfdbfe", color="#2563eb", tooltip="denki-yoho"];
+  "niri-window-hooks" [label="rei78-4e/niri-window-hooks\ne3c89a9c", fillcolor="#bfdbfe", color="#2563eb", tooltip="niri-window-hooks"];
+  "wlmstr" [label="rei78-4e/wlmstr\ned8673e4", fillcolor="#bfdbfe", color="#2563eb", tooltip="wlmstr"];
+  "zathura-gui" [label="Uliboooo/zathura_thin_gui_wrapper\n6cdc6f9b", fillcolor="#bfdbfe", color="#2563eb", tooltip="zathura-gui"];
+  "home-manager_2" [label="nix-community/home-manager\ndcebe66f", fillcolor="#c7d2fe", color="#4f46e5", tooltip="home-manager_2"];
+  "nixpkgs" [label="nixos/nixpkgs\nfe83bbdd", fillcolor="#fef08a", color="#ca8a04", tooltip="nixpkgs"];
+  "flake-utils" [label="numtide/flake-utils\n11707dc2\n×4", fillcolor="#c7d2fe", color="#4f46e5", tooltip="flake-utils, flake-utils_2, flake-utils_3, flake-utils_4"];
+  "treefmt-nix" [label="numtide/treefmt-nix\nf46bb205", fillcolor="#c7d2fe", color="#4f46e5", tooltip="treefmt-nix"];
+  "rust-overlay_3" [label="oxalica/rust-overlay\n07601339", fillcolor="#c7d2fe", color="#4f46e5", tooltip="rust-overlay_3"];
+  "rust-overlay" [label="oxalica/rust-overlay\n20fd44bc", fillcolor="#c7d2fe", color="#4f46e5", tooltip="rust-overlay"];
+  "rust-overlay_2" [label="oxalica/rust-overlay\n4cdea398", fillcolor="#c7d2fe", color="#4f46e5", tooltip="rust-overlay_2"];
+  "systems" [label="nix-systems/default\nda67096a\n×4", fillcolor="#e5e7eb", color="#9ca3af", tooltip="systems, systems_2, systems_3, systems_4"];
+  "nixpkgs_2" [label="NixOS/nixpkgs\n18dd725c", fillcolor="#fef08a", color="#ca8a04", tooltip="nixpkgs_2"];
+  "denki-yoho" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "flake-utils" -> "systems" [label="systems", style="solid"];
+  "helix-git" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "helix-git" -> "rust-overlay" [label="rust-overlay", style="solid"];
+  "herdr" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "herdr" -> "rust-overlay_2" [label="rust-overlay", style="solid"];
+  "home-manager" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "home-manager_2" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "jolt" -> "flake-utils" [label="flake-utils", style="solid"];
+  "jolt" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "niri-float-sticky" -> "flake-utils" [label="flake-utils", style="solid"];
+  "niri-float-sticky" -> "nixpkgs" [label="nixpkgs", style="solid"];
+  "niri-scratchpad" -> "flake-utils" [label="flake-utils", style="solid"];
+  "niri-scratchpad" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "niri-scratchpad" -> "rust-overlay_3" [label="rust-overlay", style="solid"];
+  "niri-window-hooks" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "nix-hazkey" -> "home-manager_2" [label="home-manager", style="solid"];
+  "nix-hazkey" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "nur" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "nur" -> "treefmt-nix" [label="treefmt-nix", style="solid"];
+  "root" -> "denki-yoho" [label="denki-yoho", style="solid"];
+  "root" -> "helix-git" [label="helix-git", style="solid"];
+  "root" -> "herdr" [label="herdr", style="solid"];
+  "root" -> "home-manager" [label="home-manager", style="solid"];
+  "root" -> "jolt" [label="jolt", style="solid"];
+  "root" -> "niri-float-sticky" [label="niri-float-sticky", style="solid"];
+  "root" -> "niri-scratchpad" [label="niri-scratchpad", style="solid"];
+  "root" -> "niri-window-hooks" [label="niri-window-hooks", style="solid"];
+  "root" -> "nix-hazkey" [label="nix-hazkey", style="solid"];
+  "root" -> "nixpkgs-master" [label="nixpkgs-master", style="solid"];
+  "root" -> "nixpkgs_3" [label="nixpkgs", style="solid"];
+  "root" -> "nur" [label="nur", style="solid"];
+  "root" -> "wlmstr" [label="wlmstr", style="solid"];
+  "root" -> "zathura-gui" [label="zathura-gui", style="solid"];
+  "rust-overlay" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "rust-overlay_2" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "rust-overlay_3" -> "nixpkgs_2" [label="nixpkgs", style="solid"];
+  "treefmt-nix" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "wlmstr" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+  "zathura-gui" -> "flake-utils" [label="flake-utils", style="solid"];
+  "zathura-gui" -> "nixpkgs_3" [label="nixpkgs*", style="dashed", color="#94a3b8", constraint="false"];
+}

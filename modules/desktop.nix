@@ -87,9 +87,15 @@ let
       /run/current-system/sw/bin/hyprctl dispatch dpms on
     fi
   '';
+  # swayidle -w waits for every command, so a blocking hyprlock would stall
+  # its event loop and replay queued Lock/PrepareForSleep events on unlock.
+  # Detach, and skip if already locked.
   swayidleLock = pkgs.writeShellScript "swayidle-lock" ''
-    ${lib.getExe pkgs.hyprlock}
-    loginctl unlock-session
+    pidof hyprlock >/dev/null && exit 0
+    (
+      ${lib.getExe pkgs.hyprlock}
+      loginctl unlock-session
+    ) &
   '';
 
   swayidleLaunch = pkgs.writeShellScript "swayidle-launch" ''
@@ -101,6 +107,15 @@ let
   '';
 in
 {
+  # udiskie 2.7.0's keyutils tests fail on current kernels
+  # (EKEYREVOKED on invalidate, invalid keyring payload in list_keys),
+  # so skip the upstream test suite instead of patching each test.
+  nixpkgs.overlays = [
+    (final: prev: {
+      udiskie = prev.udiskie.overridePythonAttrs { doCheck = false; };
+    })
+  ];
+
   # ===== desktop base (entire system) =====
   services.desktopManager.gnome.enable = true;
   services.displayManager.defaultSession = "niri";

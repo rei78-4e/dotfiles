@@ -185,6 +185,17 @@ return {
     "PartyWumpus/typst-concealer",
     ft = "typst",
     opts = {},
+    config = function(_, opts)
+      local tc = require("typst-concealer")
+      tc.setup(opts)
+      -- render only $math$: code like #pause or #diagram(...) renders as an
+      -- empty/broken image. upstream reads captures by id (call_ident=1,
+      -- code=2, block=3), so keep them declared via a never-matching pattern.
+      tc._typst_query = vim.treesitter.query.parse("typst", [[
+((code (call item: (ident) @call_ident) @code) (#eq? @code ""))
+(math) @block
+]])
+    end,
   },
   {
     "otnc/package-license-viewer",

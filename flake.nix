@@ -18,7 +18,7 @@
     };
 
     herdr = {
-      url = "github:ogulcancelik/herdr/v0.7.5";
+      url = "github:ogulcancelik/herdr/v0.9.5";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -60,6 +60,9 @@
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # opencode only: nixos-unstable lags behind, and an older opencode can't read a DB migrated by a newer one.
+    nixpkgs-master.url = "github:NixOS/nixpkgs/master";
   };
 
   outputs =

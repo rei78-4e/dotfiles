@@ -70,3 +70,75 @@ nix flake update
 ```
 
 there are `update` function in fish.
+
+## Dependency Graphs
+
+`script/nix-deps-graph.py` renders dependency graphs as SVG (or PNG/DOT).
+Arrows point at what a component depends on.
+
+```bash
+# one overview: flake inputs -> NixOS output -> runtime closure
+./script/nix-deps-graph.py combined
+
+# all three graphs (flake / system / overview) -> graph/*.svg
+./script/nix-deps-graph.py all
+
+# flake input lock graph only
+./script/nix-deps-graph.py flake
+
+# runtime closure of /run/current-system, direct dependencies only
+./script/nix-deps-graph.py system --depth 1
+
+# start from a package in the closure and go two levels deep
+./script/nix-deps-graph.py system --root helix --depth 2
+
+# focus on a few packages
+./script/nix-deps-graph.py system --depth 3 --include 'glibc|systemd|linux'
+
+# other output options
+./script/nix-deps-graph.py system --format png -o system.png
+./script/nix-deps-graph.py system --rankdir TB --exclude 'tree-sitter'
+```
+
+Useful options:
+
+- `--depth N` / `-d N` – levels below the root (default `1`, `-1` = unlimited)
+- `--root PATH|NAME` – any store path or package name in the closure
+- `--include REGEX`, `--exclude REGEX` – filter package labels
+- `--max-nodes N` – safety limit (default `1000`)
+- `--format svg|png|dot`, `--rankdir TB|LR|BT|RL`, `--no-dot`
+- `--flake DIR|URL`, `-o/--output FILE|DIR`
+
+The `combined` graph places the flake lock graph next to the running
+system's store path and its runtime closure, so the flake inputs, the
+pinned `nixpkgs`, and the resulting NixOS system are visible in one SVG.
+
+Graphviz is used for layout. It is looked up on `PATH` and in the Nix store;
+if it is missing, the script builds `nixpkgs#graphviz` once with `nix build`.
+
+## Config Canvas
+
+`script/config-canvas/server.py` is a local, dependency-free atlas of this
+repository. It rescans the tree on every run, opens itself with `xdg-open`,
+and exits when the browser tab goes away.
+
+```bash
+./script/config-canvas/server.py
+
+# options
+./script/config-canvas/server.py --no-open --port 8765
+./script/config-canvas/server.py ~/dotfiles
+./script/config-canvas/server.py --check
+```
+
+Files view groups every node by folder colour, includes root-level files
+directly under the root folder node, and draws curved containment lines.
+Hover any node for a dossier (size, lines, words, mode, owner, mtime,
+preview). Drag a node to pull its neighbours through the spring lines;
+right-drag anywhere to pan. `ARRANGE` (or `A`) randomises the constellation.
+`CONTENT` (`2`) parses the selected file into a second node graph: nix
+attrsets/bindings/lambdas/imports, JSON/TOML/Markdown, or a text outline.
+Textual files get source fragments; images get thumbnails; audio/video and
+PDFs get previews or direct links; binaries get a hex view.
+
+

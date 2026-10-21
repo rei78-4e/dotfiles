@@ -21,6 +21,7 @@ let
   niri-scratchpad = inputs.niri-scratchpad.packages.${system}.default;
   niri-window-hooks = inputs.niri-window-hooks.packages.${system}.default;
   denki-yoho = inputs.denki-yoho.packages.${system}.default;
+  opencode = inputs.nixpkgs-master.legacyPackages.${system}.opencode;
   helix-git = inputs.helix-git.packages.${system}.helix.override {
     grammarOverlays = [
       (_final: prev: {
