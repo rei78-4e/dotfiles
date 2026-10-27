@@ -44,9 +44,7 @@ fish_add_path -g $HOME/.moon/bin
 # brass
 fish_add_path -g $HOME/.brass/bin
 # go bin
-if type -q go
-    fish_add_path -g (go env GOPATH)/bin
-end
+fish_add_path -g (go env GOPATH)/bin
 
 # Linux
 fish_add_path -g /opt/rocm/bin

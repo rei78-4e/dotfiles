@@ -89,10 +89,6 @@
     },
 
     {
-      "type": "display",
-      "key": "{##00b894}│  󰍹 Display "
-    },
-    {
       "type": "command",
       "key": "{##00b894}│  󰻠 CPU     ",
       "text": "$HOME/dotfiles/script/cpu-info.sh"

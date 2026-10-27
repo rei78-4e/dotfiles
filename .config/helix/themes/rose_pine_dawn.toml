@@ -6,6 +6,9 @@
 
 inherits = "rose_pine"
 
+# upstream の subtle は text と近すぎてコードと区別しづらいので薄く + 背景付きに
+"ui.virtual.inlay-hint" = { fg = "muted", bg = "highlight_low", modifiers = ["italic"] }
+
 [palette]
 base           = "#faf4ed" 
 surface        = "#fffaf3" 

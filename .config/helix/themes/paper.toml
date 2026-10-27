@@ -1,0 +1,199 @@
+# Author: rei
+# Inspired by: PaperDesign.md (uncoated paper UI for waybar/hyprland/niri/swaync)
+#
+# - 紙面は透けない: すべての面は不透明
+# - rose (#d38ca0 / rose-deep) は active / focus / selected 専用
+# - warning (#a84435) は error / diff.minus など本当に警告の時だけ
+# - 構文色は ink を色相でわずかに染めた「印刷インク」の4色に絞る
+#   (rose-deep: keywords / ochre: constants / olive: strings / slate: functions+types)
+# - state は太字・斜体・下線と細い罫線で示す
+
+# --- core palette (PaperDesign.md, 人のぬくもり: さらに rose/リネン寄りに) ---
+# paper        #ebe1de  基本紙面
+# paper-light  #f7f2f0  popup / tooltip / 内側の面
+# ink          #2d302b  本文
+# ink-muted    #6b6562  二次 text / comment
+# rule         #b1a49f  主要罫線
+# rule-soft    #c9bab5  弱い罫線 / whitespace
+# rose         #d38ca0  focus (cursor / match の背景)
+# rose-wash    #ead2d9  selected / hover 背景
+# warning      #a84435  critical only
+
+# --- derived tones (印刷用に少し濃くした派生色) ---
+# paper-mid   #e0d3ce  cursorline / ruler / inline code の帯
+# rose-deep   #a4657d  rose を文字色として読める濃さに
+# ochre       #96703f  numbers / attribute / directive
+# olive       #6b7355  strings / members
+# slate       #4e6e8e  functions / types / links
+
+"ui.background" = { fg = "ink", bg = "paper" }
+"ui.background.separator" = { fg = "rule-soft", bg = "paper" }
+
+"ui.cursor" = { fg = "paper", bg = "rose" }
+"ui.cursor.primary" = { fg = "paper", bg = "rose" }
+"ui.cursor.match" = { fg = "ink", bg = "rose-wash", modifiers = ["bold"] }
+
+"ui.gutter" = { fg = "rule", bg = "paper" }
+"ui.gutter.selected" = { fg = "ink", bg = "paper" }
+
+"ui.linenr" = { fg = "rule", bg = "paper" }
+"ui.linenr.selected" = { fg = "ink", bg = "paper", modifiers = ["bold"] }
+
+"ui.bufferline" = { fg = "ink-muted", bg = "paper" }
+"ui.bufferline.active" = { fg = "ink", bg = "paper", modifiers = ["bold"] }
+
+"ui.statusline" = { fg = "ink-muted", bg = "paper-light" }
+"ui.statusline.inactive" = { fg = "rule", bg = "paper" }
+"ui.statusline.separator" = { fg = "rule-soft", bg = "paper-light" }
+"ui.statusline.normal" = { fg = "ink", bg = "paper-light", modifiers = ["bold"] }
+"ui.statusline.insert" = { fg = "rose-deep", bg = "rose-wash", modifiers = ["bold"] }  # mode は rose 系で統一
+"ui.statusline.select" = { fg = "rose-deep", bg = "rose-wash", modifiers = ["bold"] }
+
+"ui.popup" = { fg = "ink", bg = "paper-light" }
+"ui.menu" = { fg = "ink", bg = "paper-light" }
+"ui.menu.selected" = { fg = "ink", bg = "rose-wash", modifiers = ["bold"] }
+"ui.menu.scroll" = { fg = "rule", bg = "paper-light" }
+"ui.window" = { fg = "rule", bg = "paper" }  # 浮遊面の周りは罫線だけ
+"ui.help" = { fg = "ink-muted", bg = "paper-light" }
+
+"ui.picker.header" = { fg = "rose-deep", bg = "paper", modifiers = ["bold"] }
+"ui.picker.header.column" = { fg = "ink-muted", bg = "paper" }
+"ui.picker.header.column.active" = { fg = "rose-deep", bg = "paper", modifiers = ["bold"] }
+
+"ui.text" = { fg = "ink" }
+"ui.text.focus" = { fg = "ink", bg = "rose-wash" }
+"ui.text.inactive" = { fg = "ink-muted" }
+"ui.text.info" = { fg = "ink-muted" }
+"ui.text.directory" = { fg = "ink", bg = "paper", modifiers = ["bold"] }
+
+"ui.selection" = { bg = "rose-wash" }
+"ui.selection.primary" = { bg = "rose-wash" }
+
+"ui.cursorline.primary" = { bg = "paper-mid" }
+"ui.cursorline.secondary" = { bg = "paper-light" }
+"ui.cursorcolumn.primary" = { bg = "paper-mid" }
+"ui.cursorcolumn.secondary" = { bg = "paper-light" }
+
+"ui.highlight" = { bg = "rose-wash" }
+
+"ui.virtual" = { fg = "rule-soft" }
+"ui.virtual.ruler" = { bg = "paper-mid" }
+"ui.virtual.whitespace" = { fg = "rule-soft" }
+"ui.virtual.indent-guide" = { fg = "rule-soft" }
+"ui.virtual.wrap" = { fg = "rule-soft" }
+# rose_pine_dawn と同じく inlay-hint は斜体 + 薄い紙面
+"ui.virtual.inlay-hint" = { fg = "ink-muted", bg = "paper-light", modifiers = ["italic"] }
+"ui.virtual.jump-label" = { fg = "ink", bg = "rose-wash", modifiers = ["bold"] }
+
+"warning" = "ochre"
+"error" = "warning"
+"info" = "slate"
+"hint" = "ink-muted"
+"debug" = "rule"
+
+"diagnostic" = { underline = { color = "rule", style = "curl" } }
+"diagnostic.error" = { underline = { color = "warning", style = "curl" } }
+"diagnostic.warning" = { underline = { color = "ochre", style = "curl" } }
+"diagnostic.info" = { underline = { color = "slate", style = "curl" } }
+"diagnostic.hint" = { underline = { color = "ink-muted", style = "curl" } }
+"diagnostic.unnecessary" = { fg = "rule", modifiers = ["dim"] }
+"diagnostic.deprecated" = { fg = "ink-muted", modifiers = ["crossed_out"] }
+
+"special" = "rose-deep"
+
+"attribute" = { fg = "ochre", modifiers = ["italic"] }
+
+"type" = "slate"
+"type.builtin" = { fg = "slate", modifiers = ["bold"] }
+"constructor" = "ochre"
+
+"constant" = "ochre"
+"constant.builtin" = "rose-deep"
+"constant.builtin.boolean" = "rose-deep"
+"constant.character" = "olive"
+"constant.character.escape" = { fg = "rose-deep", modifiers = ["bold"] }
+"constant.numeric" = "ochre"
+
+"string" = "olive"
+"string.special" = { fg = "rose-deep", modifiers = ["italic"] }
+"string.special.path" = { fg = "rose-deep", modifiers = ["italic"] }
+"string.special.url" = { fg = "slate", modifiers = ["italic"], underline = { style = "line" } }
+"string.special.symbol" = "ochre"
+
+"comment" = { fg = "ink-muted", modifiers = ["italic"] }
+"comment.line.documentation" = { fg = "ink-muted", bg = "paper-light", modifiers = ["italic"] }
+"comment.block.documentation" = { fg = "ink-muted", bg = "paper-light", modifiers = ["italic"] }
+
+"variable" = "ink"
+"variable.builtin" = { fg = "rose-deep", modifiers = ["italic"] }
+"variable.parameter" = "ink"
+"variable.other.member" = "olive"
+
+"label" = { fg = "ochre", modifiers = ["italic"] }
+
+"punctuation" = "ink-muted"
+"punctuation.delimiter" = "ink-muted"
+"punctuation.bracket" = "ink"
+"punctuation.special" = "rose-deep"
+
+"keyword" = "rose-deep"
+"keyword.operator" = { fg = "ink-muted", modifiers = ["italic"] }
+"keyword.directive" = "ochre"
+"keyword.function" = { fg = "rose-deep", modifiers = ["bold"] }
+"keyword.storage" = "rose-deep"
+"keyword.storage.modifier" = "rose-deep"
+
+"operator" = "ink"
+
+"function" = "slate"
+"function.builtin" = { fg = "slate", modifiers = ["bold"] }
+"function.method" = "slate"
+"function.macro" = { fg = "ochre", modifiers = ["italic"] }
+
+"tag" = "rose-deep"
+
+"namespace" = "ink"
+
+"markup.heading" = { fg = "ink", bg = "paper", modifiers = ["bold"] }
+"markup.heading.1" = { fg = "rose-deep", bg = "paper", modifiers = ["bold"] }
+"markup.heading.2" = { fg = "slate", bg = "paper", modifiers = ["bold"] }
+"markup.heading.3" = { fg = "olive", bg = "paper", modifiers = ["bold"] }
+"markup.heading.4" = { fg = "ochre", bg = "paper", modifiers = ["bold"] }
+"markup.heading.5" = { fg = "ink", bg = "paper", modifiers = ["bold"] }
+"markup.heading.6" = { fg = "ink-muted", bg = "paper", modifiers = ["bold"] }
+"markup.heading.marker" = { fg = "rule", bg = "paper" }
+"markup.list" = "ochre"
+"markup.list.unnumbered" = "rose-deep"
+"markup.bold" = { fg = "ink", modifiers = ["bold"] }
+"markup.italic" = { fg = "ink", modifiers = ["italic"] }
+"markup.strikethrough" = { fg = "ink-muted", modifiers = ["crossed_out"] }
+"markup.link" = "slate"
+"markup.link.url" = { fg = "slate", underline = { color = "slate", style = "line" } }
+"markup.link.label" = { fg = "rose-deep", modifiers = ["italic"] }
+"markup.link.text" = "slate"
+"markup.quote" = { fg = "ink-muted", bg = "paper-light", modifiers = ["italic"] }
+"markup.raw" = "ink"
+"markup.raw.inline" = { fg = "ink", bg = "paper-mid" }
+"markup.raw.block" = { fg = "ink", bg = "paper-mid" }
+
+"diff" = "rule-soft"
+"diff.plus" = "olive"
+"diff.minus" = "warning"  # 削除行だけ warning を許可
+"diff.delta" = "ochre"
+"diff.delta.moved" = "slate"
+
+[palette]
+paper        = "#ebe1de"
+paper-light  = "#f7f2f0"
+paper-mid    = "#e0d3ce"
+ink          = "#2d302b"
+ink-muted    = "#6b6562"
+rule         = "#b1a49f"
+rule-soft    = "#c9bab5"
+rose         = "#d38ca0"
+rose-wash    = "#ead2d9"
+rose-deep    = "#a4657d"
+ochre        = "#96703f"
+olive        = "#6b7355"
+slate        = "#4e6e8e"
+warning      = "#a84435"

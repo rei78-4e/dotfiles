@@ -21,6 +21,7 @@ let
   niri-scratchpad = inputs.niri-scratchpad.packages.${system}.default;
   niri-window-hooks = inputs.niri-window-hooks.packages.${system}.default;
   denki-yoho = inputs.denki-yoho.packages.${system}.default;
+  scribe = pkgs.callPackage ../pkgs/scribe.nix { src = inputs.scribe; };
   opencode = inputs.nixpkgs-master.legacyPackages.${system}.opencode;
   helix-git = inputs.helix-git.packages.${system}.helix.override {
     grammarOverlays = [
@@ -239,6 +240,7 @@ let
     niri-scratchpad
     niri-window-hooks
     denki-yoho
+    scribe
     gnome-calendar
     thunderbird
     evolution

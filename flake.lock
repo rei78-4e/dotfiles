@@ -142,11 +142,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792495086,
-        "narHash": "sha256-TyoYH983Nsc++1scw0SoOEKshPSJWJDxK7tTmuZ974M=",
+        "lastModified": 1792773325,
+        "narHash": "sha256-bvba9Lts8r8d15MdIDMwJGDxLtJiTlasKtAZyhTDzXk=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "ec80131710bffcdf3b8498cf41f3a0579833b023",
+        "rev": "6d9655f76459099b0db2f57b13563729c7022aa7",
         "type": "github"
       },
       "original": {
@@ -298,11 +298,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1792534302,
-        "narHash": "sha256-8iGEzm+iAPdoFwL1ULuBi7T4RSSIEAbxRsYGWagcE+E=",
+        "lastModified": 1792812153,
+        "narHash": "sha256-T2+XBfNbf9pecLUWS4+RtuVNZ3W8K5taG5QdV71mWlk=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "808311374c3ab66fdf82ffff5e8bfc9e5d327786",
+        "rev": "674a2028661e550a97400c1cc992b9cca9a668a1",
         "type": "github"
       },
       "original": {
@@ -352,11 +352,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1792072527,
-        "narHash": "sha256-ZHmAGbCOSXJQRG5NUcN2Hdyad4bueI4Jenq5aSD1/iY=",
+        "lastModified": 1792769015,
+        "narHash": "sha256-NxzoZOPLbz3RLmE6Gly8RM98RQn6uwPng0FMBEWxe0E=",
         "owner": "charmbracelet",
         "repo": "nur",
-        "rev": "5533ebb4a41a78fae398695a79e533e35c73a1f5",
+        "rev": "b643b08820a55fe481110fbedfbd751a5437509e",
         "type": "github"
       },
       "original": {
@@ -379,6 +379,7 @@
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-master": "nixpkgs-master",
         "nur": "nur",
+        "scribe": "scribe",
         "wlmstr": "wlmstr",
         "zathura-gui": "zathura-gui"
       }
@@ -440,6 +441,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "scribe": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792699981,
+        "narHash": "sha256-Cj47L7qouv6gfi7grcBSYLi9/zXZlmqESrlb+wJL6nw=",
+        "owner": "gnacho",
+        "repo": "scribe",
+        "rev": "2067863d6f9fde4bb2813722d71191f3ec98d6a2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gnacho",
+        "repo": "scribe",
         "type": "github"
       }
     },

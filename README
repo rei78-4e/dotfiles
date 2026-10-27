@@ -131,8 +131,10 @@ and exits when the browser tab goes away.
 ./script/config-canvas/server.py --check
 ```
 
-Files view groups every node by folder colour, includes root-level files
-directly under the root folder node, and draws curved containment lines.
+The canvas follows the Paper Design palette (paper / ink / rose, flat
+surfaces, hairline rules). Files view groups every node by folder colour,
+includes root-level files directly under the root folder node, and draws
+curved containment lines.
 Hover any node for a dossier (size, lines, words, mode, owner, mtime,
 preview). Drag a node to pull its neighbours through the spring lines;
 right-drag anywhere to pan. `ARRANGE` (or `A`) randomises the constellation.
@@ -140,5 +142,11 @@ right-drag anywhere to pan. `ARRANGE` (or `A`) randomises the constellation.
 attrsets/bindings/lambdas/imports, JSON/TOML/Markdown, or a text outline.
 Textual files get source fragments; images get thumbnails; audio/video and
 PDFs get previews or direct links; binaries get a hex view.
+
+`FLOW` (`3`) is the rebuild pipeline: `flake.lock` inputs -> flake outputs ->
+host/home entrypoints -> imported modules -> per-output evaluation ->
+`nixos-rebuild` / `home-manager switch` -> system generation. Import edges
+are pulled from every reachable `.nix` file, and each output shows the
+modules in its evaluation closure.
 
 

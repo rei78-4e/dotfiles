@@ -3,5 +3,8 @@
   "theme": {
     "name": "system"
   },
+  "tabs": {
+    "mode": "off"
+  },
   "plugins": ["./herdr-opencode"]
 }

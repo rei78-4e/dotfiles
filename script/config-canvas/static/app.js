@@ -57,6 +57,7 @@
   function pathKey(node) {
     if (!node) return '';
     if (S.view === 'files') return 'fs:' + node.path;
+    if (S.view === 'flow') return 'fl:' + String(node.kind || '') + ':' + String(node.label || '');
     return 'ct:' + (S.contentPath || '') + ':' + (node.line || 0) + ':' + String(node.label || '');
   }
 
@@ -69,9 +70,9 @@
   }
 
   const FOLDER_TINTS = [
-    '#c97754', '#c4a15f', '#8fa36c', '#6f9b91', '#7d92b8', '#a582ad',
-    '#b77c8a', '#a08a6b', '#699e8a', '#c08a67', '#849bb0', '#9587b0',
-    '#b48f62', '#7f9e7c', '#a7776d', '#7296a0',
+    '#b58a7f', '#b8a577', '#8f9f73', '#7f9b93', '#8393ad', '#9c8ba5',
+    '#b08490', '#a1947d', '#7e9b88', '#b09077', '#8698a4', '#938aa0',
+    '#ab9573', '#8d9d80', '#a18482', '#7f99a0',
   ];
   const TINT_CACHE = new Map();
 
@@ -106,7 +107,7 @@
   }
 
   function tintForFolder(key) {
-    if (key === '.' || key === '') return '#d95b3d';
+    if (key === '.' || key === '') return '#d38ca0';
     if (TINT_CACHE.has(key)) return TINT_CACHE.get(key);
     const idx = Math.floor(hash01('tint:' + key) * FOLDER_TINTS.length) % FOLDER_TINTS.length;
     const color = FOLDER_TINTS[idx];
@@ -115,7 +116,7 @@
   }
 
   function tintForNode(node) {
-    return tintForFolder(folderKeyFor(node));
+    return node.tint || tintForFolder(folderKeyFor(node));
   }
 
   function timeAgo(ts) {
@@ -130,6 +131,7 @@
   }
 
   function nodeTag(n) {
+    if (S.view === 'flow') return String(n.tag || n.kind || 'NODE').toUpperCase();
     if (S.view !== 'files') {
       const k = String(n.kind || 'node').toUpperCase();
       return k.length > 7 ? k.slice(0, 7) : k;
@@ -143,6 +145,7 @@
   }
 
   function nodeMeta(n) {
+    if (S.view === 'flow') return String(n.detail || '');
     if (S.view !== 'files') return String(n.detail || '');
     if (n.path === '.') {
       return `${n.descDirs ?? 0} dirs · ${n.descFiles ?? 0} files · ${n.descBytesLabel || ''}`;
@@ -196,6 +199,8 @@
     view: 'files',
     scene: null,
     fileScene: null,
+    flow: null,
+    flowStages: [],
     pos: new Map(),
     dims: new Map(),
     nodeEls: new Map(),
@@ -212,7 +217,7 @@
     contentPath: null,
     content: null,
     contentCollapsed: new Set(),
-    cams: { files: null, content: null },
+    cams: { files: null, content: null, flow: null },
     cam: { x: 0, y: 0, k: 1 },
     drag: null,
     camAnim: null,
@@ -365,7 +370,8 @@
 
   function fitView(opts = {}) {
     const maxDepth = Number.isFinite(opts.maxDepth) ? opts.maxDepth : null;
-    const bounds = getSceneBounds(40, maxDepth == null ? null : (n) => (n.depth ?? 0) <= maxDepth);
+    const pad = S.view === 'flow' ? 80 : 40;
+    const bounds = getSceneBounds(pad, maxDepth == null ? null : (n) => (n.depth ?? 0) <= maxDepth);
     if (!bounds) return;
     const { w: vw, h: vh } = viewportSize();
     const inspectorPad = document.body.classList.contains('inspector-open') ? 340 : 0;
@@ -741,6 +747,90 @@
   }
 
   // ------------------------------------------------------------------
+  // rebuild flow scene
+
+  function flowTint(n, index) {
+    if (n.kind === 'input') return FOLDER_TINTS[index % FOLDER_TINTS.length];
+    if (n.kind === 'flake' || n.kind === 'rebuild') return '#d38ca0';
+    if (n.kind === 'output') return n.outputType === 'nixos' ? '#d38ca0' : '#b08490';
+    if (n.kind === 'eval') return '#a1947d';
+    if (n.kind === 'target') return '#77766d';
+    if (n.kind === 'entry' || n.kind === 'module') {
+      const path = String(n.path || '');
+      return tintForFolder(path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '.');
+    }
+    return '#a1947d';
+  }
+
+  function flowDims(n) {
+    const label = String(n.label || '');
+    const tag = String(n.tag || n.kind || '');
+    const tagWidth = Math.max(20, tag.length * 5.4 + 9);
+    const w = clamp(38 + Math.min(label.length, 40) * 6.9 + tagWidth + 24, 184, 370);
+    const h = n.kind === 'input' ? 54 : 58;
+    return { w: Math.round(w), h };
+  }
+
+  function buildFlowScene() {
+    if (!S.flow || !S.flow.nodes.length) return null;
+    const stageNames = S.flow.stages || [
+      'INPUTS', 'FLAKE', 'OUTPUTS', 'ENTRYPOINTS',
+      'MODULES', 'EVAL', 'REBUILD', 'SYSTEM',
+    ];
+    const groups = new Map();
+    for (const node of S.flow.nodes) {
+      const stage = Number(node.stage) || 0;
+      if (!groups.has(stage)) groups.set(stage, []);
+      groups.get(stage).push(node);
+    }
+    for (const list of groups.values()) {
+      list.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0)
+        || String(a.label).localeCompare(String(b.label), undefined, { numeric: true }));
+    }
+
+    const gap = 68;
+    const nodes = [];
+    const positions = new Map();
+    const stageInfo = [];
+    let x = 0;
+    const maxStage = Math.max(...groups.keys(), 0);
+    for (let stage = 0; stage <= maxStage; stage++) {
+      const list = groups.get(stage) || [];
+      const dims = list.map(flowDims);
+      const maxW = dims.length ? Math.max(...dims.map(d => d.w)) : 220;
+      const centerX = x + maxW / 2;
+      const totalH = Math.max(0, (list.length - 1) * gap);
+      for (let i = 0; i < list.length; i++) {
+        const node = list[i];
+        const dim = dims[i];
+        const y = -totalH / 2 + i * gap - dim.h / 2;
+        const pos = { x: centerX - dim.w / 2, y, w: dim.w, h: dim.h };
+        positions.set(node.id, pos);
+        nodes.push({ ...node, tint: node.tint || flowTint(node, i), _dims: dim });
+      }
+      stageInfo.push({
+        index: stage,
+        label: stageNames[stage] || `STAGE ${stage + 1}`,
+        x: centerX,
+        width: maxW,
+      });
+      x += maxW + 48;
+    }
+
+    const minX = Math.min(...stageInfo.map(s => s.x - s.width / 2));
+    const maxX = Math.max(...stageInfo.map(s => s.x + s.width / 2));
+    const shiftX = -(minX + maxX) / 2;
+    for (const pos of positions.values()) pos.x += shiftX;
+    for (const stage of stageInfo) stage.x += shiftX;
+    const top = Math.min(...[...positions.values()].map(p => p.y));
+    for (const stage of stageInfo) stage.top = top - 58;
+
+    S.pos = positions;
+    S.flowStages = stageInfo;
+    return { view: 'flow', nodes, edges: S.flow.edges, rootId: null };
+  }
+
+  // ------------------------------------------------------------------
   // rendering
 
   function nodeClass(n) {
@@ -751,6 +841,10 @@
       if (n.kind === 'image') cls.push('is-image');
       if (n.kind === 'nix') cls.push('is-nix');
       if (n.path === '.') cls.push('is-root');
+    } else if (S.view === 'flow') {
+      cls.push('is-flow-node');
+      cls.push('flow-' + String(n.kind || 'node'));
+      if (n.kind === 'flake' || n.kind === 'rebuild') cls.push('is-nix');
     } else {
       cls.push('is-content-node');
       cls.push('content-' + String(n.kind || 'node'));
@@ -782,13 +876,21 @@
       const a = byId.get(e.source);
       const b = byId.get(e.target);
       if (!a || !b) continue;
-      const path = mk('path', { class: 'edge', d: '' }, els.edgeLayer);
-      // Edge colour comes from the folder that owns the child node.
-      path.style.setProperty('--edge-tint', blend('#3e3f39', tintForNode(b), 0.42));
+      const path = mk('path', {
+        class: S.view === 'flow' ? `edge ${e.kind || 'flow-edge'}` : 'edge',
+        d: '',
+      }, els.edgeLayer);
+      // Files and content borrow the folder tint; flow borrows the source stage.
+      path.style.setProperty(
+        '--edge-tint',
+        blend('#b7b0a2', tintForNode(S.view === 'flow' ? a : b), 0.32),
+      );
       const item = { edge: e, path, a, b };
       S.edgeEls.push(item);
       addAdjacency(e.source, e.target);
     }
+
+    if (S.view === 'flow') renderFlowStageLabels();
 
     for (const n of S.scene.nodes) {
       const p = S.pos.get(n.id);
@@ -805,6 +907,25 @@
     updateMini();
     updateStats();
     updateHudVisible();
+  }
+
+  function renderFlowStageLabels() {
+    for (const stage of S.flowStages || []) {
+      const label = mk('text', {
+        class: 'flow-stage-label',
+        x: stage.x,
+        y: stage.top,
+        'text-anchor': 'middle',
+      }, els.edgeLayer);
+      label.textContent = `${String(stage.index + 1).padStart(2, '0')}  ${stage.label}`;
+      mk('line', {
+        class: 'flow-stage-rule',
+        x1: stage.x - stage.width / 2,
+        y1: stage.top + 11,
+        x2: stage.x + stage.width / 2,
+        y2: stage.top + 11,
+      }, els.edgeLayer);
+    }
   }
 
   function addAdjacency(a, b) {
@@ -828,22 +949,22 @@
     const height = p.h;
     const name = isFile ? (n.name || n.path) : (n.label || '');
     const meta = nodeMeta(n);
-    const kind = isFile ? (n.kind === 'dir' ? 'dir' : n.kind) : contentIconKind(n);
+    const kind = isFile ? (n.kind === 'dir' ? 'dir' : n.kind) : (n.icon || contentIconKind(n));
     const isRoot = isFile ? n.path === '.' : n.kind === 'root';
     const tint = tintForNode(n);
-    const tintAmount = isRoot ? 0 : (n.kind === 'image' ? 0.10 : (n.type === 'dir' ? 0.15 : (n.kind === 'nix' ? 0.13 : 0.09)));
+    const tintAmount = isRoot ? 0 : (n.kind === 'image' ? 0.035 : (n.type === 'dir' ? 0.04 : (n.kind === 'nix' ? 0.05 : 0.03)));
     const tag = nodeTag(n);
 
     g.style.setProperty('--tint', tint);
-    g.style.setProperty('--tint-bg', blend('#17181a', tint, tintAmount));
-    g.style.setProperty('--tint-bg-dir', blend('#17181a', tint, Math.max(0.12, tintAmount + 0.03)));
-    g.style.setProperty('--tint-bg-nix', blend('#17181a', tint, Math.max(0.11, tintAmount)));
-    g.style.setProperty('--tint-bg-hi', blend('#202124', tint, 0.22));
-    g.style.setProperty('--tint-ink', blend('#c6c0b4', tint, 0.52));
+    g.style.setProperty('--tint-bg', blend('#fbf9f2', tint, tintAmount));
+    g.style.setProperty('--tint-bg-dir', blend('#f1eee5', tint, tintAmount));
+    g.style.setProperty('--tint-bg-nix', blend('#fbf9f2', tint, tintAmount + 0.01));
+    g.style.setProperty('--tint-bg-hi', '#fbf9f2');
+    g.style.setProperty('--tint-ink', blend('#77766d', tint, 0.42));
 
-    mk('rect', { class: 'node-bg', x: 0, y: 0, width: w, height: height, rx: 1 }, g);
+    mk('rect', { class: 'node-bg', x: 0, y: 0, width: w, height: height, rx: 0 }, g);
     mk('rect', { class: 'node-accent', x: 0, y: isRoot ? 0 : 6, width: isRoot ? 3 : 2.5, height: isRoot ? height : height - 12 }, g);
-    mk('rect', { class: 'node-halo', x: -3.5, y: -3.5, width: w + 7, height: height + 7, rx: 3 }, g);
+    mk('rect', { class: 'node-halo', x: -3.5, y: -3.5, width: w + 7, height: height + 7, rx: 0 }, g);
 
     const iconY = (isFile && n.kind === 'image') ? 8 : Math.round((height - 16) / 2);
     const icon = mk('g', {
@@ -886,11 +1007,11 @@
       const frameH = height - 53;
       mk('rect', {
         class: 'node-thumb-frame',
-        x: 9, y: frameY, width: w - 18, height: frameH, rx: 1,
+        x: 9, y: frameY, width: w - 18, height: frameH, rx: 0,
       }, g);
       const clipId = `clip-${n.id}-${++clipSeq}`;
       const clip = mk('clipPath', { id: clipId }, els.defs);
-      mk('rect', { x: 9, y: frameY, width: w - 18, height: frameH, rx: 1 }, clip);
+      mk('rect', { x: 9, y: frameY, width: w - 18, height: frameH, rx: 0 }, clip);
       const img = mk('image', {
         class: 'node-thumb',
         x: 9, y: frameY, width: w - 18, height: frameH,
@@ -913,7 +1034,7 @@
         class: 'fold-badge',
         transform: `translate(${w - 15} ${height - 14})`,
       }, g);
-      mk('circle', { class: 'fold-bg', cx: 0, cy: 0, r: 7 }, fold);
+      mk('rect', { class: 'fold-bg', x: -7, y: -7, width: 14, height: 14 }, fold);
       mk('text', { class: 'fold-text', x: 0, y: 3.1 }, fold).textContent = n._collapsed ? '+' : '−';
       fold.addEventListener('pointerdown', (e) => e.stopPropagation());
       fold.addEventListener('click', (e) => {
@@ -959,15 +1080,15 @@
     if (kind === 'call') return 'code';
     if (kind === 'table') return 'data';
     if (kind === 'heading') return 'text';
+    if (kind === 'input') return 'config';
+    if (kind === 'flake') return 'nix';
+    if (kind === 'output') return 'nix';
+    if (kind === 'entry') return 'code';
+    if (kind === 'module') return 'code';
+    if (kind === 'eval') return 'code';
+    if (kind === 'rebuild') return 'code';
+    if (kind === 'target') return 'config';
     return 'file';
-  }
-
-  function contentKindColor(kind) {
-    if (kind === 'binding' || kind === 'import') return '#d2472b';
-    if (kind === 'attrset' || kind === 'table') return '#1b1a17';
-    if (kind === 'lambda' || kind === 'call') return '#6d665a';
-    if (kind === 'string' || kind === 'literal') return '#a39b8d';
-    return '#b3aa9a';
   }
 
   // ------------------------------------------------------------------
@@ -1402,6 +1523,7 @@
     els.inspector.setAttribute('aria-hidden', 'false');
     els.inspector.scrollTop = 0;
     if (S.view === 'files') renderFileInspector(node);
+    else if (S.view === 'flow') renderFlowInspector(node);
     else renderContentInspector(node);
   }
 
@@ -1553,6 +1675,143 @@
     }).catch(() => {
       if (S.infoId === node.id) h('div', { class: 'empty', text: 'preview unavailable' }, els.inspPreview);
     });
+  }
+
+  function remoteUrl(url) {
+    const value = String(url || '');
+    if (value.startsWith('github:')) {
+      return 'https://github.com/' + value.slice('github:'.length);
+    }
+    if (value.startsWith('git+')) return value.slice(4);
+    return value;
+  }
+
+  function copyText(value, label = 'COPIED') {
+    if (!value) return;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(value).then(
+        () => toast(label),
+        () => toast('COPY FAILED'),
+      );
+    } else {
+      toast('CLIPBOARD UNAVAILABLE');
+    }
+  }
+
+  function flowNodeForPath(path) {
+    return (S.scene?.nodes || []).find(n => n.path === path && (n.kind === 'module' || n.kind === 'entry'));
+  }
+
+  function renderFlowInspector(node) {
+    const stageName = (S.flow?.stages || [])[node.stage] || `STAGE ${node.stage + 1}`;
+    els.inspBadge.textContent = String(node.tag || node.kind || 'FLOW').toUpperCase();
+    els.inspBadge.classList.toggle('is-accent', node.kind === 'rebuild' || node.kind === 'flake');
+    els.inspTitle.textContent = node.label || node.kind;
+    els.inspSub.textContent = node.detail || '';
+    const rows = [];
+    rows.push(metaRow('STAGE', `${String(node.stage + 1).padStart(2, '0')} · ${stageName}`));
+    rows.push(metaRow('KIND', node.kind || 'node'));
+    if (node.path) rows.push(metaRow('FILE', node.path));
+    if (node.url) rows.push(metaRow('SOURCE', node.url));
+    if (node.rev) rows.push(metaRow('REVISION', node.rev));
+    if (node.date) rows.push(metaRow('UPDATED', node.date));
+    if (node.command) rows.push(metaRow('COMMAND', node.command));
+    if (node.outputType) rows.push(metaRow('TARGET', node.outputType === 'nixos' ? 'NixOS system' : 'Home Manager profile'));
+    if (node.imports?.length) rows.push(metaRow('IMPORTS', String(node.imports.length)));
+    if (node.modulePaths?.length) rows.push(metaRow('CLOSURE', `${node.modulePaths.length} files`));
+    els.inspMeta.innerHTML = rows.join('');
+
+    const actions = [];
+    actions.push(actionButton('CENTER', () => centerOn(node.id, Math.max(0.6, S.cam.k))));
+    if (node.command) actions.push(actionButton('COPY COMMAND', () => copyText(node.command, 'COMMAND COPIED'), { accent: true }));
+    else if (node.path) actions.push(actionButton('COPY PATH', () => copyText(node.path, 'PATH COPIED')));
+    else if (node.url) actions.push(actionButton('COPY URL', () => copyText(node.url, 'URL COPIED')));
+    if (node.path) {
+      actions.push(actionButton('FILE IN FILES', () => {
+        setView('files');
+        const target = (S.fs?.nodes || []).find(n => n.path === node.path);
+        if (target) {
+          selectNode(target.id);
+          centerOn(target.id);
+        } else {
+          toast('FILE NOT IN SCAN');
+        }
+      }));
+    }
+    if (node.url) {
+      actions.push(actionButton('OPEN REMOTE', () => window.open(remoteUrl(node.url), '_blank', 'noopener')));
+    }
+    setActions(actions);
+
+    clear(els.inspPreview);
+    h('div', {
+      class: 'factline',
+      text: `${stageName} · ${node.kind}${node.path ? ' · ' + node.path : ''}${node.command ? ' · ' + node.command : ''}`,
+    }, els.inspPreview);
+
+    if (node.command) {
+      h('div', { class: 'preview-label', text: 'REBUILD COMMAND' }, els.inspPreview);
+      const pre = h('pre', { text: node.command }, els.inspPreview);
+      pre.textContent = node.command;
+      h('div', {
+        class: 'factline',
+        text: 'The command evaluates the flake output, builds the closure, then activates the new generation.',
+      }, els.inspPreview);
+      return;
+    }
+
+    if (node.modulePaths?.length) {
+      h('div', { class: 'preview-label', text: 'EVALUATION CLOSURE' }, els.inspPreview);
+      const row = h('div', { class: 'chip-row' }, els.inspPreview);
+      for (const path of node.modulePaths.slice(0, 30)) {
+        const chip = h('button', { class: 'chip', type: 'button', text: path }, row);
+        chip.addEventListener('click', () => {
+          const target = flowNodeForPath(path);
+          if (target) {
+            showInfoFor(target.id);
+            centerOn(target.id);
+          }
+        });
+      }
+      if (node.modulePaths.length > 30) h('span', { class: 'chip more', text: `+${node.modulePaths.length - 30}` }, row);
+      return;
+    }
+
+    if (node.imports?.length) {
+      h('div', { class: 'preview-label', text: 'IMPORTS' }, els.inspPreview);
+      const row = h('div', { class: 'chip-row' }, els.inspPreview);
+      for (const path of node.imports) {
+        const chip = h('button', { class: 'chip', type: 'button', text: path }, row);
+        chip.addEventListener('click', () => {
+          const target = flowNodeForPath(path);
+          if (target) {
+            showInfoFor(target.id);
+            centerOn(target.id);
+          }
+        });
+      }
+      if (!node.imports.length) h('div', { class: 'empty', text: 'no local imports' }, els.inspPreview);
+    }
+
+    if (node.path) {
+      h('div', { class: 'preview-label', text: 'SOURCE' }, els.inspPreview);
+      const pre = h('pre', { text: 'reading…' }, els.inspPreview);
+      fetchPreview(node.path).then(data => {
+        if (S.infoId !== node.id) return;
+        if (data.text) {
+          const lines = data.text.split('\n').slice(0, 28).join('\n');
+          pre.textContent = lines + (data.text.split('\n').length > 28 ? '\n…' : '');
+        } else {
+          pre.textContent = 'no text preview';
+        }
+      }).catch(() => {
+        if (S.infoId === node.id) pre.textContent = 'source unavailable';
+      });
+    } else if (node.url) {
+      h('div', { class: 'preview-label', text: 'FLAKE INPUT' }, els.inspPreview);
+      h('div', { class: 'factline', text: node.url }, els.inspPreview);
+      if (node.rev) h('div', { class: 'factline', text: `rev ${node.rev}` }, els.inspPreview);
+    }
   }
 
   function renderContentInspector(node) {
@@ -1717,7 +1976,9 @@
       return;
     }
     for (const n of S.scene.nodes) {
-      const hay = (S.view === 'files' ? [n.name, n.path, n.ext, n.kind] : [n.label, n.detail, n.kind]).join(' ').toLowerCase();
+      const hay = (S.view === 'files'
+        ? [n.name, n.path, n.ext, n.kind]
+        : [n.label, n.detail, n.kind, n.tag, n.path, n.command]).join(' ').toLowerCase();
       const hit = hay.includes(q);
       const el = S.nodeEls.get(n.id);
       if (el) {
@@ -1740,12 +2001,17 @@
   // stats / hud / minimap
 
   function updateStats() {
-    els.statView.textContent = S.view === 'files' ? 'FILES' : 'CONTENT';
+    els.statView.textContent = S.view === 'files' ? 'FILES' : (S.view === 'flow' ? 'FLOW' : 'CONTENT');
     if (S.view === 'files') {
       els.statNodes.textContent = `${fmt(S.fs.stats.nodes)} NODES`;
       els.statDetail.textContent = `${fmt(S.fs.stats.dirs)} DIRS · ${fmt(S.fs.stats.files)} FILES · ${fmt(S.fs.stats.textFiles || 0)} TEXT · ${fmt(S.fs.stats.imageFiles || 0)} IMG · ${S.fs.stats.bytesLabel}`;
       els.statScan.textContent = `${S.fs.scanMs} MS SCAN`;
       if (els.statScan) els.statScan.title = S.fs.generatedAt;
+    } else if (S.view === 'flow' && S.flow && S.flow.stats) {
+      const f = S.flow.stats;
+      els.statNodes.textContent = `${fmt(f.nodes)} NODES · ${fmt(f.edges)} LINES`;
+      els.statDetail.textContent = `${fmt(f.inputs)} INPUTS → ${fmt(f.outputs)} OUTPUTS · ${fmt(f.entries)} ENTRY · ${fmt(f.modules)} MODULES · ${fmt(f.rebuilds)} REBUILDS`;
+      els.statScan.textContent = 'STATIC DEPENDENCY FLOW';
     } else if (S.content) {
       els.statNodes.textContent = `${fmt(visibleCount())} / ${fmt(S.content.tree.stats.nodes)} NODES`;
       els.statDetail.textContent = S.content.path;
@@ -1789,8 +2055,11 @@
         width: Math.max(1.2, p.w * scale).toFixed(1),
         height: Math.max(1.2, p.h * scale).toFixed(1),
       }, svg);
-      rect.style.fill = tintForNode(n);
-      rect.style.opacity = S.view === 'files' && n.type === 'dir' ? '0.8' : '0.52';
+      const tint = tintForNode(n);
+      rect.style.fill = S.view === 'files' && n.type === 'dir'
+        ? blend('#2d302b', tint, 0.24)
+        : blend('#77766d', tint, 0.48);
+      rect.style.opacity = S.view === 'files' && n.type === 'dir' ? '0.88' : '0.66';
     }
     mk('rect', { class: 'mini-view', x: 0, y: 0, width: 0, height: 0 }, svg);
     updateMiniViewport();
@@ -1862,6 +2131,18 @@
       else fitView({ animate: false });
       S.cams.files = { ...S.cam };
       updateStats();
+    } else if (view === 'flow') {
+      S.scene = buildFlowScene();
+      if (!S.scene) {
+        toast('NO FLAKE FLOW DATA');
+        setView('files');
+        return;
+      }
+      renderScene();
+      if (S.cams.flow) { S.cam = { ...S.cams.flow }; applyCamera(); }
+      else fitView({ animate: false });
+      S.cams.flow = { ...S.cam };
+      updateStats();
     } else {
       if (!S.content) {
         const preferred = (S.fs?.files || []).find(f => f.ext === 'nix' && f.path === 'flake.nix') || (S.fs?.files || []).find(f => f.structured) || (S.fs?.files || [])[0];
@@ -1886,6 +2167,11 @@
 
   function arrangeMap() {
     if (!S.fs) return;
+    if (S.view === 'flow') {
+      fitView({ animate: true });
+      toast('FLOW IS ORDERED · INPUTS → FLAKE → OUTPUTS → MODULES → REBUILD', 2800);
+      return;
+    }
     if (S.view !== 'files') setView('files');
     stopPhysics();
     S.fileScene = null;
@@ -2166,6 +2452,7 @@
       if (!res.ok) throw new Error('scan request failed: ' + res.status);
       const data = await res.json();
       S.fs = data;
+      S.flow = data.flow || null;
       S.fileScene = null;
       els.rootPath.textContent = data.root;
       els.rootPath.title = data.root;
@@ -2177,6 +2464,17 @@
         else if (previousCam) { S.cam = previousCam; applyCamera(); }
         else fitView({ animate: false, maxDepth: 1 });
         S.cams.files = { ...S.cam };
+      } else if (S.view === 'flow') {
+        S.scene = buildFlowScene();
+        if (S.scene) {
+          renderScene();
+          if (S.cams.flow) { S.cam = { ...S.cams.flow }; applyCamera(); }
+          else fitView({ animate: false });
+          S.cams.flow = { ...S.cam };
+        } else {
+          toast('NO FLAKE FLOW DATA');
+          setView('files');
+        }
       } else {
         // refresh the open content file too, if it still exists
         const stillThere = (data.files || []).some(f => f.path === S.contentPath);
@@ -2347,6 +2645,7 @@
         case 'r': ev.preventDefault(); loadGraph({ quiet: true }); break;
         case '1': ev.preventDefault(); setView('files'); break;
         case '2': ev.preventDefault(); setView('content'); break;
+        case '3': ev.preventDefault(); setView('flow'); break;
         case '+': case '=': ev.preventDefault(); zoomAt(viewportSize().w / 2, viewportSize().h / 2, 1.15); break;
         case '-': case '_': ev.preventDefault(); zoomAt(viewportSize().w / 2, viewportSize().h / 2, 1 / 1.15); break;
         default: break;

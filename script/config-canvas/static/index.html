@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f1eee5">
   <title>Config Canvas</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/static/style.css">
@@ -46,6 +47,7 @@
       <div class="viewswitch" role="tablist" aria-label="View">
         <button type="button" class="switch-btn is-active" data-view="files" role="tab" aria-selected="true">FILES</button>
         <button type="button" class="switch-btn" data-view="content" role="tab" aria-selected="false">CONTENT</button>
+        <button type="button" class="switch-btn" data-view="flow" role="tab" aria-selected="false">FLOW</button>
       </div>
 
       <div class="searchbox">
@@ -105,7 +107,7 @@
         <span id="hudVisible">0 visible</span>
       </div>
       <div class="hud-line hud-help">
-        <span>RIGHT DRAG PAN</span><span>DRAG NODE = SPRINGS</span><span>WHEEL ZOOM</span><span>HOVER = DOSSIER</span><span>A ARRANGE</span><span>F FIT</span>
+        <span>RIGHT DRAG PAN</span><span>DRAG NODE = SPRINGS</span><span>1/2/3 VIEWS</span><span>HOVER = DOSSIER</span><span>A ARRANGE</span><span>F FIT</span>
       </div>
     </div>
 
@@ -150,12 +152,12 @@
           <div><kbd>/</kbd><span>Find a node by name or path. Enter jumps to the first hit.</span></div>
           <div><kbd>L</kbd><span>Link mode. Click two nodes to draw a dashed freeform thread.</span></div>
           <div><kbd>double-click</kbd><span>Fold a content node, or remove one of your dashed links.</span></div>
-          <div><kbd>1 / 2</kbd><span>Files view / content-structure view.</span></div>
+          <div><kbd>1 / 2 / 3</kbd><span>Files / content structure / flake rebuild flow.</span></div>
           <div><kbd>R</kbd><span>Rescan the folder and rebuild the atlas.</span></div>
           <div><kbd>?</kbd><span>This card.</span></div>
           <div><kbd>esc</kbd><span>Cancel link mode or close panels.</span></div>
         </div>
-        <p class="help-foot">Each folder has its own muted tint. Root files hang directly from the big root folder node. Lines are containment in the files view and expression structure in content view. Every run rescans the folder, so edits show up on <span class="mono">SCAN</span> or reload.</p>
+        <p class="help-foot">Each folder has its own muted tint. Root files hang directly from the big root folder node. Lines are containment in the files view, expression structure in content view, and dependency flow in the FLOW view (flake inputs → outputs → entrypoints → modules → eval → rebuild → system). Every run rescans the folder, so edits show up on <span class="mono">SCAN</span> or reload.</p>
       </div>
     </div>
   </div>

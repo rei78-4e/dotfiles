@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   ...
@@ -265,12 +266,25 @@ in
   };
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
-  security.pam.services.gdm-password.enableGnomeKeyring = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
 
   services.upower.enable = true;
 
   services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;
+  # TUI greeter on tty1 instead of GDM; sessions come from the same
+  # wayland-sessions/xsessions entries GDM would list (niri, GNOME).
+  services.greetd = {
+    enable = true;
+    settings.default_session.command = lib.concatStringsSep " " [
+      "${pkgs.tuigreet}/bin/tuigreet"
+      "--time"
+      "--remember"
+      "--remember-session"
+      "--asterisks"
+      "--sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions"
+      "--xsessions ${config.services.displayManager.sessionData.desktops}/share/xsessions"
+    ];
+  };
 
   services.keyd = {
     enable = true;

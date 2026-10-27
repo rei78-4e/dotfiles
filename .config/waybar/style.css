@@ -21,7 +21,7 @@ window#waybar {
 
 tooltip {
   background-color: #fbf9f2;
-  border: 1px solid #aaa394;
+  border: 1px solid #b7b0a2;
   border-radius: 0;
   box-shadow: none;
 }
@@ -105,7 +105,7 @@ tooltip label {
 
 #workspaces button.urgent {
   background-color: transparent;
-  color: #8d332b;
+  color: #a84435;
   box-shadow: none;
   font-weight: 800;
 }
@@ -113,26 +113,6 @@ tooltip label {
 #window,
 #custom-niri-windows,
 #custom-hypr-windows,
-#mpris {
-  color: #4e5149;
-}
-
-#custom-niri-ratio {
-  color: #77766d;
-}
-
-#submap {
-  background-color: transparent;
-  color: #a26a14;
-  font-weight: 700;
-  padding-left: 10px;
-}
-
-#clock {
-  color: #2d302b;
-  font-weight: 700;
-}
-
 #memory,
 #pulseaudio,
 #bluetooth,
@@ -142,12 +122,29 @@ tooltip label {
 #custom-tlp,
 #custom-system-control,
 #custom-notification {
-  color: #4e5149;
+  color: #2d302b;
+}
+
+#mpris,
+#custom-niri-ratio {
+  color: #77766d;
+}
+
+#submap {
+  background-color: transparent;
+  color: #d38ca0;
+  font-weight: 700;
+  padding-left: 10px;
+}
+
+#clock {
+  color: #2d302b;
+  font-weight: 700;
 }
 
 #pulseaudio.muted,
 #network.disconnected {
-  color: #8a867c;
+  color: #77766d;
   text-decoration: line-through;
 }
 

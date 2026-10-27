@@ -606,6 +606,8 @@ def scan_filesystem(root: Path) -> dict:
     ]
     content_files.sort(key=lambda f: (not f["structured"], f["path"].lower()))
 
+    flow = build_flow(root, files)
+
     elapsed = (time.perf_counter() - started) * 1000
     return {
         "root": str(root),
@@ -615,6 +617,7 @@ def scan_filesystem(root: Path) -> dict:
         "nodes": nodes,
         "edges": edges,
         "files": content_files,
+        "flow": flow,
         "stats": {
             "dirs": dir_count,
             "files": file_count,
@@ -1601,6 +1604,517 @@ def parse_content(src: str, rel: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# rebuild flow: flake inputs -> outputs -> imports -> evaluation -> rebuild
+
+FLOW_STAGES = [
+    "INPUTS",
+    "FLAKE",
+    "OUTPUTS",
+    "ENTRYPOINTS",
+    "MODULES",
+    "EVAL",
+    "REBUILD",
+    "SYSTEM",
+]
+
+
+def _flow_string(node: dict) -> str:
+    raw = node.get("value")
+    if raw is not None:
+        return str(raw)
+    label = str(node.get("label", ""))
+    if label.startswith('"') and label.endswith('"'):
+        return label[1:-1]
+    if label.startswith("''") and label.endswith("''"):
+        return label[2:-2]
+    return label
+
+
+def _flow_resolve(value: str, constants: dict[str, str]) -> str:
+    def repl(match: re.Match[str]) -> str:
+        key = match.group(1).strip()
+        return constants.get(key, match.group(0))
+
+    resolved = re.sub(r"\$\{([^}]+)\}", repl, value)
+    if resolved.startswith('"') and resolved.endswith('"'):
+        resolved = resolved[1:-1]
+    return resolved
+
+
+def _collect_flow_constants(node: dict, prefix: str, out: dict[str, str]) -> None:
+    for child in node.get("children", []):
+        if child.get("kind") == "binding":
+            label = str(child.get("label", ""))
+            full = f"{prefix}.{label}" if prefix else label
+            value = (child.get("children") or [{}])[0]
+            if value.get("kind") in {"string", "literal", "ident"}:
+                out[full] = _flow_string(value)
+            if value.get("kind") == "attrset":
+                _collect_flow_constants(value, full, out)
+            else:
+                _collect_flow_constants(value, prefix, out)
+        else:
+            _collect_flow_constants(child, prefix, out)
+
+
+def _find_flow_binding(node: dict, path: str, prefix: str = "") -> dict | None:
+    for child in node.get("children", []):
+        if child.get("kind") == "binding":
+            label = str(child.get("label", ""))
+            full = f"{prefix}.{label}" if prefix else label
+            if full == path:
+                return child
+            value = (child.get("children") or [{}])[0]
+            if value.get("kind") == "attrset":
+                found = _find_flow_binding(value, path, full)
+                if found is not None:
+                    return found
+        else:
+            found = _find_flow_binding(child, path, prefix)
+            if found is not None:
+                return found
+    return None
+
+
+def _lock_inputs(root: Path) -> dict[str, dict]:
+    lock_path = root / "flake.lock"
+    if not lock_path.is_file():
+        return {}
+    try:
+        lock = json.loads(read_text(lock_path) or "{}")
+    except Exception:
+        return {}
+    nodes = lock.get("nodes") or {}
+    root_inputs = (nodes.get("root") or {}).get("inputs") or {}
+    result: dict[str, dict] = {}
+    for name, key in root_inputs.items():
+        node = nodes.get(key) or {}
+        locked = node.get("locked") or {}
+        original = node.get("original") or {}
+        url = locked.get("url") or original.get("url") or ""
+        if not url and locked.get("type") == "github":
+            url = f"github:{locked.get('owner')}/{locked.get('repo')}"
+        if not url and locked.get("type") == "path":
+            url = locked.get("path") or original.get("path") or ""
+        rev = str(locked.get("rev") or original.get("rev") or "")
+        last_modified = locked.get("lastModified")
+        date = ""
+        if isinstance(last_modified, (int, float)):
+            date = _dt.datetime.fromtimestamp(last_modified).date().isoformat()
+        detail = " · ".join(part for part in [url, rev[:7], date] if part)
+        result[name] = {
+            "url": url,
+            "rev": rev,
+            "date": date,
+            "detail": detail or "locked flake input",
+            "type": locked.get("type") or original.get("type") or "",
+        }
+    return result
+
+
+def _extract_flow_inputs(tree: dict, constants: dict[str, str], root: Path) -> list[dict]:
+    binding = _find_flow_binding(tree, "inputs")
+    names: list[str] = []
+    if binding is not None:
+        value = (binding.get("children") or [{}])[0]
+        if value.get("kind") == "attrset":
+            for child in value.get("children", []):
+                if child.get("kind") != "binding":
+                    continue
+                name = str(child.get("label", "")).split(".", 1)[0]
+                if name and name not in names:
+                    names.append(name)
+    locked = _lock_inputs(root)
+    for name in locked:
+        if name not in names:
+            names.append(name)
+
+    inputs: list[dict] = []
+    for name in names:
+        info = locked.get(name) or {}
+        ast_url = constants.get(f"inputs.{name}.url") or constants.get(f"inputs.{name}") or ""
+        url = info.get("url") or ast_url
+        rev = info.get("rev") or ""
+        date = info.get("date") or ""
+        detail = info.get("detail") or " · ".join(part for part in [url, rev[:7], date] if part) or "flake input"
+        inputs.append(
+            {
+                "name": name,
+                "url": url,
+                "rev": rev,
+                "date": date,
+                "detail": detail,
+                "type": info.get("type") or "",
+            }
+        )
+    return inputs
+
+
+def _extract_flow_outputs(tree: dict, constants: dict[str, str], root: Path) -> list[dict]:
+    outputs: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+
+    def walk(node: dict, prefix: str) -> None:
+        for child in node.get("children", []):
+            if child.get("kind") == "binding":
+                label = str(child.get("label", ""))
+                full = f"{prefix}.{label}" if prefix else label
+                match = re.match(r"^(nixosConfigurations|homeConfigurations)\.(.+)$", full)
+                if match:
+                    namespace = match.group(1)
+                    raw_name = match.group(2)
+                    name = _flow_resolve(raw_name, constants)
+                    key = (namespace, name)
+                    if key not in seen and "${" not in name:
+                        seen.add(key)
+                        kind = "nixos" if namespace == "nixosConfigurations" else "home"
+                        entry = ""
+                        if kind == "nixos":
+                            candidate = root / "hosts" / name / "configuration.nix"
+                            if candidate.is_file():
+                                entry = candidate.relative_to(root).as_posix()
+                        else:
+                            base = name.split("@", 1)[0]
+                            for candidate in (root / "home" / f"{base}.nix", root / "home" / "rei.nix"):
+                                if candidate.is_file():
+                                    entry = candidate.relative_to(root).as_posix()
+                                    break
+                        command = (
+                            f"sudo nixos-rebuild switch --flake .#{name}"
+                            if kind == "nixos"
+                            else f"home-manager switch --flake {('.#' + name) if '@' not in name else repr('.#' + name)}"
+                        )
+                        outputs.append(
+                            {
+                                "namespace": namespace,
+                                "name": name,
+                                "kind": kind,
+                                "entry": entry,
+                                "command": command,
+                            }
+                        )
+                value = (child.get("children") or [{}])[0]
+                if value.get("kind") == "attrset":
+                    walk(value, full)
+                else:
+                    walk(value, prefix)
+            else:
+                walk(child, prefix)
+
+    walk(tree, "")
+    outputs.sort(key=lambda item: (0 if item["kind"] == "nixos" else 1, item["name"]))
+    return outputs
+
+
+def _flow_imports(root: Path, files: list[dict]) -> dict[str, set[str]]:
+    nix_files = {
+        item["path"]: item
+        for item in files
+        if item["path"].endswith(".nix") and item.get("text")
+    }
+    graph: dict[str, set[str]] = {path: set() for path in nix_files}
+    for rel in nix_files:
+        path = root / rel
+        source = read_text(path)
+        if source is None:
+            continue
+        for token in tokenize_nix(source):
+            if token.kind != "path":
+                continue
+            value = token.value
+            if not (value.startswith("./") or value.startswith("../")):
+                continue
+            try:
+                target = (path.parent / value).resolve()
+                target.relative_to(root)
+            except (OSError, ValueError):
+                continue
+            if target.suffix != ".nix" or not target.is_file():
+                continue
+            target_rel = target.relative_to(root).as_posix()
+            if target_rel in nix_files:
+                graph[rel].add(target_rel)
+    return graph
+
+
+def _flow_closure(start: str, graph: dict[str, set[str]]) -> set[str]:
+    seen: set[str] = set()
+    stack = list(graph.get(start, ()))
+    while stack:
+        current = stack.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        stack.extend(graph.get(current, ()))
+    return seen
+
+
+def _empty_flow() -> dict:
+    return {
+        "stages": FLOW_STAGES,
+        "nodes": [],
+        "edges": [],
+        "stats": {
+            "inputs": 0,
+            "outputs": 0,
+            "entries": 0,
+            "modules": 0,
+            "evals": 0,
+            "rebuilds": 0,
+            "targets": 0,
+            "nodes": 0,
+            "edges": 0,
+        },
+    }
+
+
+def build_flow(root: Path, files: list[dict]) -> dict:
+    flake_path = root / "flake.nix"
+    source = read_text(flake_path)
+    if source is None:
+        return _empty_flow()
+    try:
+        tree = NixParser(source, "flake.nix").parse()
+    except Exception:
+        return _empty_flow()
+
+    constants: dict[str, str] = {}
+    _collect_flow_constants(tree, "", constants)
+    inputs = _extract_flow_inputs(tree, constants, root)
+    outputs = _extract_flow_outputs(tree, constants, root)
+    graph = _flow_imports(root, files)
+    file_meta = {item["path"]: item for item in files}
+
+    nodes: list[dict] = []
+    edges: list[dict] = []
+
+    def add_node(node: dict) -> None:
+        nodes.append(node)
+
+    def add_edge(source_id: str, target_id: str, kind: str) -> None:
+        edges.append(
+            {
+                "id": f"fle{len(edges) + 1}",
+                "source": source_id,
+                "target": target_id,
+                "kind": kind,
+            }
+        )
+
+    input_ids: list[str] = []
+    for index, item in enumerate(inputs):
+        node_id = f"fl-input-{index}"
+        input_ids.append(node_id)
+        add_node(
+            {
+                "id": node_id,
+                "stage": 0,
+                "order": index,
+                "kind": "input",
+                "tag": "INPUT",
+                "icon": "config",
+                "label": item["name"],
+                "detail": item["detail"],
+                "url": item["url"],
+                "rev": item["rev"],
+                "date": item["date"],
+            }
+        )
+
+    flake_id = "fl-flake"
+    add_node(
+        {
+            "id": flake_id,
+            "stage": 1,
+            "order": 0,
+            "kind": "flake",
+            "tag": "FLAKE",
+            "icon": "nix",
+            "label": "flake.nix",
+            "detail": f"{len(inputs)} inputs · {len(outputs)} outputs",
+            "path": "flake.nix",
+        }
+    )
+    for input_id in input_ids:
+        add_edge(input_id, flake_id, "flow-input")
+
+    entry_ids: dict[str, str] = {}
+    module_ids: dict[str, str] = {}
+    entry_paths: list[str] = []
+    for output in outputs:
+        entry = output["entry"]
+        if entry and entry not in entry_ids:
+            entry_ids[entry] = f"fl-entry-{len(entry_ids)}"
+            entry_paths.append(entry)
+
+    for path in entry_paths:
+        meta = file_meta.get(path, {})
+        imports = graph.get(path, set())
+        add_node(
+            {
+                "id": entry_ids[path],
+                "stage": 3,
+                "order": entry_paths.index(path),
+                "kind": "entry",
+                "tag": "ENTRY",
+                "icon": "code",
+                "label": (path[6:] if path.startswith("hosts/") else path),
+                "detail": f"{path} · {meta.get('lines', '—')} L · {meta.get('sizeLabel', '')}",
+                "path": path,
+                "imports": sorted(imports),
+            }
+        )
+
+    # Union of all modules reachable from the selected entrypoints.
+    closure_by_entry: dict[str, set[str]] = {}
+    all_modules: set[str] = set()
+    for entry in entry_paths:
+        closure = _flow_closure(entry, graph)
+        closure_by_entry[entry] = closure
+        all_modules.update(path for path in closure if path not in entry_ids)
+
+    for index, path in enumerate(sorted(all_modules)):
+        module_ids[path] = f"fl-module-{index}"
+        meta = file_meta.get(path, {})
+        imports = sorted(graph.get(path, set()))
+        add_node(
+            {
+                "id": module_ids[path],
+                "stage": 4,
+                "order": index,
+                "kind": "module",
+                "tag": "MODULE",
+                "icon": "code",
+                "label": (path[6:] if path.startswith("hosts/") else path),
+                "detail": f"{meta.get('lines', '—')} L · {meta.get('sizeLabel', '')} · {len(imports)} import{'s' if len(imports) != 1 else ''}",
+                "path": path,
+                "imports": imports,
+            }
+        )
+
+    output_ids: list[str] = []
+    rebuild_ids: list[str] = []
+    target_ids: list[str] = []
+    for index, output in enumerate(outputs):
+        output_id = f"fl-output-{index}"
+        output_ids.append(output_id)
+        add_node(
+            {
+                "id": output_id,
+                "stage": 2,
+                "order": index,
+                "kind": "output",
+                "tag": "NIXOS" if output["kind"] == "nixos" else "HOME",
+                "icon": "nix",
+                "label": output["name"],
+                "detail": f"{output['namespace']}.{output['name']}",
+                "outputType": output["kind"],
+                "modulePaths": sorted(
+                    closure_by_entry.get(output["entry"], set())
+                ),
+            }
+        )
+        add_edge(flake_id, output_id, "flow-output")
+        entry = output["entry"]
+        if entry and entry in entry_ids:
+            add_edge(output_id, entry_ids[entry], "flow-entry")
+
+        eval_id = f"fl-eval-{index}"
+        rebuild_id = f"fl-rebuild-{index}"
+        target_id = f"fl-target-{index}"
+        rebuild_ids.append(rebuild_id)
+        target_ids.append(target_id)
+        add_node(
+            {
+                "id": eval_id,
+                "stage": 5,
+                "order": index,
+                "kind": "eval",
+                "tag": "EVAL",
+                "icon": "code",
+                "label": f"eval .#{output['name']}",
+                "detail": "flake output closure",
+                "outputType": output["kind"],
+            }
+        )
+        command = output["command"]
+        add_node(
+            {
+                "id": rebuild_id,
+                "stage": 6,
+                "order": index,
+                "kind": "rebuild",
+                "tag": "REBUILD",
+                "icon": "code",
+                "label": "nixos-rebuild switch" if output["kind"] == "nixos" else "home-manager switch",
+                "detail": command,
+                "command": command,
+                "outputType": output["kind"],
+            }
+        )
+        add_node(
+            {
+                "id": target_id,
+                "stage": 7,
+                "order": index,
+                "kind": "target",
+                "tag": "SYSTEM",
+                "icon": "config",
+                "label": f"{'NixOS' if output['kind'] == 'nixos' else 'Home Manager'} · {output['name']}",
+                "detail": "system generation" if output["kind"] == "nixos" else "user profile generation",
+                "outputType": output["kind"],
+            }
+        )
+
+        reachable = closure_by_entry.get(entry, set())
+        linked = [
+            module_ids[path]
+            for path in sorted(reachable)
+            if path in module_ids
+        ]
+        if linked:
+            for module_id in linked:
+                add_edge(module_id, eval_id, "flow-eval")
+        elif entry and entry in entry_ids:
+            add_edge(entry_ids[entry], eval_id, "flow-eval")
+        else:
+            add_edge(output_id, eval_id, "flow-eval")
+        add_edge(eval_id, rebuild_id, "flow-eval")
+        add_edge(rebuild_id, target_id, "flow-rebuild")
+
+    # Import edges within the reachable module set.
+    selected = set(entry_ids) | set(module_ids)
+    seen_imports: set[tuple[str, str]] = set()
+    for source_path in sorted(selected):
+        source_id = entry_ids.get(source_path) or module_ids.get(source_path)
+        if not source_id:
+            continue
+        for target_path in sorted(graph.get(source_path, ())):
+            target_id = entry_ids.get(target_path) or module_ids.get(target_path)
+            if not target_id or (source_id, target_id) in seen_imports:
+                continue
+            seen_imports.add((source_id, target_id))
+            add_edge(source_id, target_id, "flow-import")
+
+    return {
+        "stages": FLOW_STAGES,
+        "nodes": nodes,
+        "edges": edges,
+        "stats": {
+            "inputs": len(inputs),
+            "outputs": len(outputs),
+            "entries": len(entry_ids),
+            "modules": len(module_ids),
+            "evals": len(outputs),
+            "rebuilds": len(rebuild_ids),
+            "targets": len(target_ids),
+            "nodes": len(nodes),
+            "edges": len(edges),
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # HTTP server + heartbeat lifecycle
 
 
@@ -2107,6 +2621,15 @@ def print_scan_summary(data: dict, *, quiet: bool) -> None:
     stats = data["stats"]
     skipped = stats["skipped"]
     print("  scan   " + f"{stats['nodes']} nodes · {stats['dirs']} dirs · {stats['files']} files · {stats['bytesLabel']} · {data['scanMs']:.0f} ms")
+    flow = data.get("flow") or {}
+    fstats = flow.get("stats") or {}
+    if fstats.get("nodes"):
+        print(
+            "  flow   "
+            + f"{fstats.get('inputs', 0)} inputs → {fstats.get('outputs', 0)} outputs · "
+            + f"{fstats.get('entries', 0)} entrypoints · {fstats.get('modules', 0)} modules · "
+            + f"{fstats.get('rebuilds', 0)} rebuild commands"
+        )
     if skipped:
         names = ", ".join(s["path"] for s in skipped[:6])
         extra = f" (+{len(skipped) - 6})" if len(skipped) > 6 else ""

@@ -37,7 +37,7 @@ let
   '';
   # Resuming from s2idle often wedges this firmware, so never suspend on lid
   # close: stay awake (locked) and hibernate once the lid has been closed on
-  # battery for 5 minutes. Short closes while moving resume instantly.
+  # battery for 15 minutes. Short closes while moving resume instantly.
   lidHibernate = pkgs.writeShellScript "lid-hibernate" ''
     closed_for=0
 
@@ -49,7 +49,7 @@ let
 
       if [ "$lid" = closed ] && [ "$ac" = 0 ] && [ "$docked" = "b false" ]; then
         closed_for=$(( closed_for + 5 ))
-        if [ "$closed_for" -ge 300 ]; then
+        if [ "$closed_for" -ge 900 ]; then
           closed_for=0
           ${pkgs.systemd}/bin/systemctl hibernate --check-inhibitors=no || true
         fi
@@ -127,8 +127,10 @@ in
       PCIE_ASPM_ON_BAT = "powersupersave";
       RUNTIME_PM_ON_AC = "on";
       RUNTIME_PM_ON_BAT = "auto";
-      WIFI_PWR_ON_AC = "off";
-      WIFI_PWR_ON_BAT = "on";
+      # USB autosuspend on the BT controller and WiFi power save both cause
+      # periodic Bluetooth audio dropouts, so keep them running.
+      USB_EXCLUDE_BTUSB = 1;
+      WIFI_PWR_ON_BAT = "off";
 
       # Optional: cap charge to reduce battery wear (longevity, not runtime)
       # START_CHARGE_THRESH_BAT0 = 75;
@@ -223,6 +225,22 @@ in
     rightcontrol = "rightalt";
     rightalt = "rightcontrol";
   };
+  # Bluetooth audio stability (VoicePeak/SBC-XQ headphones with mic):
+  # - enable-sbc-xq: use SBC-XQ (better S/N) instead of stock SBC for A2DP
+  # - enable-msbc + hfp_hf: wideband mic calls instead of narrowband HSP
+  # - hfphsp-backend native: use BlueZ instead of ofono, which is not installed
+  services.pipewire.wireplumber.extraConfig."51-bluez" = {
+    "monitor.bluez.properties" = {
+      "bluez5.enable-sbc-xq" = true;
+      "bluez5.enable-msbc" = true;
+      "bluez5.headset-roles" = [
+        "hfp_hf"
+        "hsp_hs"
+      ];
+      "bluez5.hfphsp-backend" = "native";
+    };
+  };
+
   services.tailscale.enable = true;
 
   services.openssh.enable = true;
@@ -233,9 +251,10 @@ in
 
   services.fprintd.enable = true;
   security.pam.services = {
-    # GDM runs gdm-fingerprint separately from gdm-password. Enabling
-    # pam_fprintd in the shared login stack blocks the password prompt.
+    # pam_fprintd ahead of pam_unix makes the login prompt wait for the
+    # sensor before accepting a password, so keep it out of tty logins.
     login.fprintAuth = lib.mkForce false;
+    greetd.fprintAuth = false;
     sudo.fprintAuth = true;
     # hyprlock scans the sensor itself over fprintd's DBus API. Leaving
     # pam_fprintd in the stack (fprintAuth defaults to services.fprintd.enable)
@@ -256,8 +275,17 @@ in
     publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIQCZc54poJ8vqawd8TraNryQeJnvH1eLpIDgbiqymM";
   };
 
-  programs.steam.enable = true;
-  hardware.graphics.enable = true;
+  # game with steam
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
+  };
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+  environment.systemPackages = [ pkgs.protonplus ];
+  programs.gamemode.enable = true;
 
   nix.distributedBuilds = true;
   nix.buildMachines = [
@@ -320,7 +348,7 @@ in
 
   boot.initrd.systemd.enable = true;
 
-  # 蓋を閉じたらロックだけ。バッテリーで5分閉じたままなら lid-hibernate が hibernate
+  # 蓋を閉じたらロックだけ。バッテリーで15分閉じたままなら lid-hibernate が hibernate
   services.logind.settings.Login = {
     HandleLidSwitch = "lock";
     HandleLidSwitchExternalPower = "lock";

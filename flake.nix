@@ -56,6 +56,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    scribe = {
+      url = "github:gnacho/scribe";
+      flake = false;
+    };
+
     helix-git = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";

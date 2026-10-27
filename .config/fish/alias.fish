@@ -184,3 +184,9 @@ function rebuild
 end
 
 abbr -a org 'cd $HOME/org && $EDITOR .'
+
+abbr -a Ruby 'cd $HOME/Develop/lang/Ruby &&
+              clear &&
+              nix develop -c irb --simple-prompt'
+
+abbr -a lang 'cd $HOME/Develop/lang'
