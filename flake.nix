@@ -12,10 +12,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    jolt = {
-      url = "github:jordond/jolt";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     herdr = {
       url = "github:ogulcancelik/herdr/v0.9.5";
@@ -56,18 +52,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    scribe = {
-      url = "github:gnacho/scribe";
-      flake = false;
-    };
-
     helix-git = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # opencode only: nixos-unstable lags behind, and an older opencode can't read a DB migrated by a newer one.
-    nixpkgs-master.url = "github:NixOS/nixpkgs/master";
   };
 
   outputs =
@@ -221,16 +209,6 @@
             home-manager.users.${userNames.desktop} = import ./home/rei.nix;
           }
 
-          # inputs.shojiwm.nixosModules.default
-          # {
-          #   programs.shojiwm = {
-          #     enable = true;
-          #     initConfig = {
-          #       enable = true;
-          #       users = [ "seli" ];
-          #     };
-          #   };
-          # }
         ];
       };
     };

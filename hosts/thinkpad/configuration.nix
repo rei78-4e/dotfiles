@@ -346,8 +346,6 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  boot.initrd.systemd.enable = true;
-
   # 蓋を閉じたらロックだけ。バッテリーで15分閉じたままなら lid-hibernate が hibernate
   services.logind.settings.Login = {
     HandleLidSwitch = "lock";
