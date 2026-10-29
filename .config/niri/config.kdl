@@ -271,279 +271,104 @@ workspace "chats" {
 }
 
 binds {
-    Super+S {
-        focus-workspace "chats"
-    }
-    Super+Shift+S {
-        move-window-to-workspace "chats"
-    }
-    Super+Backslash {
-        spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"
-    }
-    Super+bracketleft {
-        spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"
-    }
-    Super+bracketright {
-        spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"
-    }
-    Super+D {
-        spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"
-    }
-    Super+C {
-        spawn-sh "$HOME/dotfiles/script/open_notification.sh"
-    }
-    Super+Shift+V {
-        spawn-sh "$HOME/dotfiles/script/cliphist_gui.sh"
-    }
-    Super+E {
-        spawn-sh "emacs $HOME/org"
-    }
-    Super+Shift+D {
-        spawn-sh "$HOME/dotfiles/script/niri_views.sh"
-    }
-    Super+Q repeat=false {
-        close-window
-    }
+    Super+S { focus-workspace "chats"; }
+    Super+Shift+S { move-window-to-workspace "chats"; }
+    Super+Backslash { spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"; }
+    Super+bracketleft { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
+    Super+bracketright { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
+    Super+D { spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"; }
+    Super+C { spawn-sh "$HOME/dotfiles/script/open_notification.sh"; }
+    Super+Shift+V { spawn-sh "$HOME/dotfiles/script/cliphist_gui.sh"; }
+    Super+E { spawn-sh "emacs $HOME/org"; }
+    Super+Shift+D { spawn-sh "$HOME/dotfiles/script/niri_views.sh"; }
+    Super+Q repeat=false { close-window; }
     Super+T { spawn "kitty" "--single-instance"; }
     Super+M { maximize-window-to-edges; }
     Super+Shift+E { quit; }
-    Super+V {
-        toggle-window-floating
-    }
+    Super+B { spawn-sh "pkill -SIGUSR1 waybar"; }
+    Super+V { toggle-window-floating; }
     Super+F { maximize-column; }
-    Super+Ctrl+F {
-        fullscreen-window
-    }
-    Super+O repeat=false {
-        toggle-overview
-    }
-    Super+Alt+Z repeat=false {
-        spawn "wooz" "--zoom-in" "50%" "--mouse-track"
-    }
+    Super+Ctrl+F { fullscreen-window; }
+    Super+O repeat=false { toggle-overview; }
+    Super+Alt+Z repeat=false { spawn "wooz" "--zoom-in" "50%" "--mouse-track"; }
     // --- focus ---
-    Super+Left {
-        focus-column-left
-    }
-    Super+Right {
-        focus-column-right
-    }
-    Super+Up {
-        focus-window-up
-    }
-    Super+Down {
-        focus-window-down
-    }
-    Super+J {
-        focus-workspace-down
-    }
-    Super+K {
-        focus-workspace-up
-    }
-    Super+H {
-        focus-column-left
-    }
-    Super+L {
-        focus-column-right
-    }
-    Super+WheelScrollDown cooldown-ms=150 {
-        focus-workspace-down
-    }
-    Super+WheelScrollUp cooldown-ms=150 {
-        focus-workspace-up
-    }
+    Super+Left { focus-column-left; }
+    Super+Right { focus-column-right; }
+    Super+Up { focus-window-up; }
+    Super+Down { focus-window-down; }
+    Super+J { focus-workspace-down; }
+    Super+K { focus-workspace-up; }
+    Super+H { focus-column-left; }
+    Super+L { focus-column-right; }
+    Super+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Super+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
     // --- monitors (stacked vertically: DP-1 top, eDP-1 bottom) ---
-    Super+Ctrl+J {
-        focus-monitor-down
-    }
-    Super+Ctrl+K {
-        focus-monitor-up
-    }
-    Super+Ctrl+L {
-        focus-monitor-right
-    }
-    Super+Ctrl+H {
-        focus-monitor-left
-    }
-    Super+Ctrl+Home {
-        move-column-to-first
-    }
-    Super+Ctrl+End {
-        move-column-to-last
-    }
-    Super+1 {
-        focus-workspace 1
-    }
-    Super+2 {
-        focus-workspace 2
-    }
-    Super+3 {
-        focus-workspace 3
-    }
-    Super+4 {
-        focus-workspace 4
-    }
-    Super+5 {
-        focus-workspace 5
-    }
-    Super+6 {
-        focus-workspace 6
-    }
-    Super+7 {
-        focus-workspace 7
-    }
-    Super+8 {
-        focus-workspace 8
-    }
-    Super+9 {
-        focus-workspace 9
-    }
-    Super+0 {
-        focus-workspace 10
-    }
+    Super+Ctrl+J { focus-monitor-down; }
+    Super+Ctrl+K { focus-monitor-up; }
+    Super+Ctrl+L { focus-monitor-right; }
+    Super+Ctrl+H { focus-monitor-left; }
+    Super+Ctrl+Home { move-column-to-first; }
+    Super+Ctrl+End { move-column-to-last; }
+    Super+1 { focus-workspace 1; }
+    Super+2 { focus-workspace 2; }
+    Super+3 { focus-workspace 3; }
+    Super+4 { focus-workspace 4; }
+    Super+5 { focus-workspace 5; }
+    Super+6 { focus-workspace 6; }
+    Super+7 { focus-workspace 7; }
+    Super+8 { focus-workspace 8; }
+    Super+9 { focus-workspace 9; }
+    Super+0 { focus-workspace 10; }
     // --- moves ---
-    Super+Shift+J {
-        move-window-to-workspace-down
-    }
-    Super+Shift+K {
-        move-window-to-workspace-up
-    }
-    Super+Shift+H {
-        swap-window-left
-    }
-    Super+Shift+L {
-        swap-window-right
-    }
-    Super+Shift+1 {
-        move-window-to-workspace 1
-    }
-    Super+Shift+2 {
-        move-window-to-workspace 2
-    }
-    Super+Shift+3 {
-        move-window-to-workspace 3
-    }
-    Super+Shift+4 {
-        move-window-to-workspace 4
-    }
-    Super+Shift+5 {
-        move-window-to-workspace 5
-    }
-    Super+Shift+6 {
-        move-window-to-workspace 6
-    }
-    Super+Shift+7 {
-        move-window-to-workspace 7
-    }
-    Super+Shift+8 {
-        move-window-to-workspace 8
-    }
-    Super+Shift+9 {
-        move-window-to-workspace 9
-    }
-    Super+Shift+0 {
-        move-window-to-workspace 10
-    }
-    Super+Shift+M {
-        spawn-sh "$HOME/dotfiles/script/move_to_display.sh"
-    }
-    Super+Shift+Ctrl+J {
-        move-window-to-monitor-down
-    }
-    Super+Shift+Ctrl+K {
-        move-window-to-monitor-up
-    }
-    Super+Shift+Ctrl+L {
-        move-window-to-monitor-right
-    }
-    Super+Shift+Ctrl+H {
-        move-window-to-monitor-left
-    }
+    Super+Shift+J { move-window-to-workspace-down; }
+    Super+Shift+K { move-window-to-workspace-up; }
+    Super+Shift+H { swap-window-left; }
+    Super+Shift+L { swap-window-right; }
+    Super+Shift+1 { move-window-to-workspace 1; }
+    Super+Shift+2 { move-window-to-workspace 2; }
+    Super+Shift+3 { move-window-to-workspace 3; }
+    Super+Shift+4 { move-window-to-workspace 4; }
+    Super+Shift+5 { move-window-to-workspace 5; }
+    Super+Shift+6 { move-window-to-workspace 6; }
+    Super+Shift+7 { move-window-to-workspace 7; }
+    Super+Shift+8 { move-window-to-workspace 8; }
+    Super+Shift+9 { move-window-to-workspace 9; }
+    Super+Shift+0 { move-window-to-workspace 10; }
+    Super+Shift+M { spawn-sh "$HOME/dotfiles/script/move_to_display.sh"; }
+    Super+Shift+Ctrl+J { move-window-to-monitor-down; }
+    Super+Shift+Ctrl+K { move-window-to-monitor-up; }
+    Super+Shift+Ctrl+L { move-window-to-monitor-right; }
+    Super+Shift+Ctrl+H { move-window-to-monitor-left; }
     // resize
-    Super+R {
-        switch-preset-column-width
-    }
-    Super+Shift+R {
-        switch-preset-column-width-back
-    }
-    Alt+Shift+H repeat=true {
-        set-column-width "-10"
-    }
-    Alt+Shift+L repeat=true {
-        set-column-width "10"
-    }
-    Super+Ctrl+R repeat=false {
-        reset-window-height
-    }
+    Super+R { switch-preset-column-width; }
+    Super+Shift+R { switch-preset-column-width-back; }
+    Alt+Shift+H repeat=true { set-column-width "-10"; }
+    Alt+Shift+L repeat=true { set-column-width "10"; }
+    Super+Ctrl+R repeat=false { reset-window-height; }
     // --- screenshots (native niri) ---
-    Super+P repeat=false {
-        screenshot-window
-    }
-    Ctrl+Shift+S repeat=false {
-        screenshot
-    }
-    Super+Shift+P {
-        screenshot-screen
-    }
-    // --- utilities ---
-    // Super+Shift+P {
-    //     spawn-sh "$HOME/dotfiles/script/cmd_p.py"
-    // }
-    XF86ScreenSaver {
-        spawn-sh "loginctl lock-session"
-    }
+    Super+P repeat=false { screenshot-window; }
+    Ctrl+Shift+S repeat=false { screenshot; }
+    Super+Shift+P { screenshot-screen; }
+    XF86ScreenSaver { spawn-sh "loginctl lock-session"; }
     // --- wallpapers ---
-    Super+W {
-        spawn-sh "if systemctl --user is-active -q noctalia.service; then noctalia msg wallpaper-next; else wlmstr next seq; fi"
-    }
-    Super+Shift+W {
-        spawn-sh "if systemctl --user is-active -q noctalia.service; then noctalia msg wallpaper-previous; else wlmstr next pre; fi"
-    }
-    Alt+W {
-        spawn-sh "$HOME/dotfiles/script/change_wallpaper.sh"
-    }
+    Super+W { spawn-sh "if systemctl --user is-active -q noctalia.service; then noctalia msg wallpaper-next; else wlmstr next seq; fi"; }
+    Super+Shift+W { spawn-sh "if systemctl --user is-active -q noctalia.service; then noctalia msg wallpaper-previous; else wlmstr next pre; fi"; }
+    Alt+W { spawn-sh "$HOME/dotfiles/script/change_wallpaper.sh"; }
     // --- media / brightness ---
-    XF86AudioRaiseVolume allow-when-locked=true repeat=true {
-        spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"
-    }
-    XF86AudioLowerVolume allow-when-locked=true repeat=true {
-        spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"
-    }
-    XF86AudioMute allow-when-locked=true repeat=true {
-        spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-    }
-    XF86AudioMicMute allow-when-locked=true repeat=true {
-        spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-    }
-    XF86MonBrightnessUp allow-when-locked=true repeat=true {
-        spawn "brightnessctl" "-e4" "-n2" "set" "3%+"
-    }
-    XF86MonBrightnessDown allow-when-locked=true repeat=true {
-        spawn "brightnessctl" "-e4" "-n2" "set" "3%-"
-    }
-    XF86AudioNext allow-when-locked=true {
-        spawn "playerctl" "next"
-    }
-    XF86AudioPlay allow-when-locked=true {
-        spawn "playerctl" "play-pause"
-    }
-    XF86AudioPrev allow-when-locked=true {
-        spawn "playerctl" "previous"
-    }
-    XF86Favorites allow-when-locked=true {
-        spawn "playerctl" "play-pause"
-    }
+    XF86AudioRaiseVolume allow-when-locked=true repeat=true { spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"; }
+    XF86AudioLowerVolume allow-when-locked=true repeat=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"; }
+    XF86AudioMute allow-when-locked=true repeat=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute allow-when-locked=true repeat=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86MonBrightnessUp allow-when-locked=true repeat=true { spawn "brightnessctl" "-e4" "-n2" "set" "3%+"; }
+    XF86MonBrightnessDown allow-when-locked=true repeat=true { spawn "brightnessctl" "-e4" "-n2" "set" "3%-"; }
+    XF86AudioNext allow-when-locked=true { spawn "playerctl" "next"; }
+    XF86AudioPlay allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioPrev allow-when-locked=true { spawn "playerctl" "previous"; }
+    XF86Favorites allow-when-locked=true { spawn "playerctl" "play-pause"; }
     // horizontal scroll (match hypr Alt+J/K)
-    Alt+P repeat=true {
-        spawn "playerctl" "play-pause"
-    }
-    Alt+Equal repeat=true {
-        spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"
-    }
-    Alt+Minus repeat=true {
-        spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"
-    }
-    Super+Escape allow-inhibiting=false {
-        toggle-keyboard-shortcuts-inhibit
-    }
+    Alt+P repeat=true { spawn "playerctl" "play-pause"; }
+    Alt+Equal repeat=true { spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 3%+"; }
+    Alt+Minus repeat=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"; }
+    Super+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 }
 
