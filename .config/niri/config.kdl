@@ -276,7 +276,8 @@ binds {
     Super+Backslash { spawn "niri-scratchpad" "target" "--spawn" "kitty --class=scratchpad-kitty" "appid" "scratchpad-kitty"; }
     Super+bracketleft { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
     Super+bracketright { spawn "niri-scratchpad" "target" "--spawn" "emacs-scratch" "title" "Scratchpad Emacs"; }
-    Super+D { spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"; }
+    // Super+D { spawn-sh "$HOME/dotfiles/script/launch_launcher.sh"; }
+    Super+D { spawn-sh "rofi -show drun"; }
     Super+C { spawn-sh "$HOME/dotfiles/script/open_notification.sh"; }
     Super+Shift+V { spawn-sh "$HOME/dotfiles/script/cliphist_gui.sh"; }
     Super+E { spawn-sh "emacs $HOME/org"; }
@@ -286,6 +287,7 @@ binds {
     Super+M { maximize-window-to-edges; }
     Super+Shift+E { quit; }
     Super+B { spawn-sh "pkill -SIGUSR1 waybar"; }
+    F23 { spawn-sh "pkill -SIGUSR1 waybar"; }
     Super+V { toggle-window-floating; }
     Super+F { maximize-column; }
     Super+Ctrl+F { fullscreen-window; }

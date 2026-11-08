@@ -223,9 +223,11 @@ in
           "awww.service"
           "swaync.service"
         ];
-        Wants = [ "awww.service" ];
+        Wants = [
+          "awww.service"
+          "swaync.service"
+        ];
         Conflicts = [ "noctalia.service" ];
-        Requires = [ "swaync.service" ];
       };
       serviceConfig = {
         ExecStart = waybarLaunch;
