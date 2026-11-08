@@ -124,11 +124,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793033486,
-        "narHash": "sha256-fXVURa0+CSCgaxLt8tmPNJq2U+fGYOwbk5j2YUe7kSc=",
+        "lastModified": 1793979366,
+        "narHash": "sha256-7OoWDsYO9teiPxl0QdlS5lYE20Pue8/5mpscSL32FUA=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "7db163b2aee7e410e396b48aed02f646d742b9b8",
+        "rev": "2c0c1f01521469cf0271180c453c79782d53c2f6",
         "type": "github"
       },
       "original": {
@@ -275,11 +275,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1792773339,
-        "narHash": "sha256-rZLrzrC6i+jnTAlvPZHogKDulY7WWDEv9hJeHieO7Zw=",
+        "lastModified": 1793876309,
+        "narHash": "sha256-Wojg9lIH/hDH91iDVH2/EPw8oDSpxjxhXONbU1yf4Zg=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+        "rev": "f9a75f41be3a74eab55d3a7679d34ad6cc0da977",
         "type": "github"
       },
       "original": {
@@ -297,11 +297,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1792820346,
-        "narHash": "sha256-rQwebgtLmb3qAd34g0HBPvPU+QS26nMqtazNVpEv/Bg=",
+        "lastModified": 1793976353,
+        "narHash": "sha256-oy0qvEz18GJl4yg7NxQHnbBfvl/SfG5gV9Y0ilReUnk=",
         "owner": "charmbracelet",
         "repo": "nur",
-        "rev": "b5db346ba021801eb4b563107fa953b270c248a5",
+        "rev": "f6a9651fafdf27c0f9e0237d7f50c6413a89bf3e",
         "type": "github"
       },
       "original": {
@@ -459,15 +459,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1792042899,
-        "narHash": "sha256-la0nZziiu0K7N5oJMoImksgplLWteIu8UaRuwhWpoBE=",
+        "lastModified": 1793267112,
+        "narHash": "sha256-cwfxsjzxEoP1ja0ck+DS2d9rNzR53Jzh344PDegSgHo=",
         "owner": "rei78-4e",
         "repo": "wlmstr",
-        "rev": "ed8673e446c4953bcd16b8e06162175ec38c6b74",
+        "rev": "ce41207af8412443de4c54ce4959c5d34d7f8ea2",
         "type": "github"
       },
       "original": {
         "owner": "rei78-4e",
+        "ref": "babashka",
         "repo": "wlmstr",
         "type": "github"
       }

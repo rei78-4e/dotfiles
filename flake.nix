@@ -19,7 +19,7 @@
     };
 
     wlmstr = {
-      url = "github:rei78-4e/wlmstr";
+      url = "github:rei78-4e/wlmstr/babashka";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
