@@ -3,15 +3,13 @@ light = "rose_pine_dawn"
 dark = "rose_pine_moon"
 
 [editor]
-auto-info = true
-bufferline = "always"
-line-number = "relative"
-#mouse = true
-shell = ["bash", "-c"]
-# clipboard-provider = "tmux"
+auto-format = true
+completion-replace = true
 true-color = true
-rulers = [100, 120]
-# preview-completion-insert = false
+rulers = [100]
+bufferline = "multiple"
+line-number = "relative"
+shell = ["bash", "-c"]
 color-modes = true
 trim-trailing-whitespace = false
 
@@ -85,7 +83,7 @@ Z = ":wqa"
 
 [keys.select]
 y = [":pipe-to tmux load-buffder -", "yank"]
-# z = ["shrink_to_line_bounds"]
+G = "goto_file_end"
 
 [keys.insert]
 C-r = ":reload"

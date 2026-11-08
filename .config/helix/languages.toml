@@ -75,6 +75,7 @@ auto-format = true
 [[language]]
 name = "clojure"
 auto-pairs = { '(' = ')', '{' = '}', '[' = ']', '"' = '"' }
+auto-format = true
 
 [[language]]
 name = "javascript"
