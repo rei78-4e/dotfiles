@@ -33,4 +33,13 @@
     enable = true;
     binfmt = true;
   };
+
+  programs.vivid = {
+    enable = true;
+    theme = "rose-pine-dawn";
+  };
+
+  programs.fish.interactiveShellInit = ''
+    set -gx LS_COLORS (${pkgs.vivid}/bin/vivid generate rose-pine-dawn)
+  '';
 }

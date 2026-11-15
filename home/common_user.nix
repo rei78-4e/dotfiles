@@ -25,7 +25,9 @@ let
     grammarOverlays = [
       (_final: prev: {
         perl = prev.perl.overrideAttrs (old: {
-          FLAGS = old.FLAGS ++ [ "-std=c11" ];
+          env = old.env // {
+            CFLAGS = "${old.env.CFLAGS} -std=c11";
+          };
         });
       })
     ];
@@ -110,7 +112,6 @@ let
     helix-git
     tree-sitter
     zed-editor
-    vscodium
 
     # ===== TUI =====
     yazi
@@ -119,6 +120,7 @@ let
     lazygit
     btop
     htop
+    wiremix
 
     # ===== Shell =====
     fish
@@ -173,7 +175,7 @@ let
     chafa
 
     # ===== AI =====
-    codex
+    # codex
     claude-code
     opencode
 
@@ -201,7 +203,6 @@ let
   graphicalPackages = with pkgs; [
     # The user service uses an absolute store path, but interactive commands
     # still need the package in the user profile.
-    noctalia
     kitty
     spotify
     google-chrome
@@ -222,11 +223,10 @@ let
     gnome-text-editor
     gnome-tweaks
     kdePackages.kdenlive
-    shotcut
+    # shotcut
     mpv
     ghostty
     vlc
-    wiremix
     mpvpaper
     wlmstr
     zathura-gui
@@ -239,8 +239,7 @@ let
     niri-window-hooks
     denki-yoho
     gnome-calendar
-    thunderbird
-    evolution
+    cmark-gfm
   ];
 
   # Keep small daily tools that Fedora's enabled repositories do not provide.
@@ -386,10 +385,10 @@ in
         source = mkConfigLink "nvim";
         recursive = false;
       };
-      "emacs" = {
-        source = mkConfigLink "emacs";
-        recursive = false;
-      };
+      # "emacs" = {
+      #   source = mkConfigLink "emacs";
+      #   recursive = false;
+      # };
       # Enchant (used by Emacs's jinx) looks here for user dictionaries; the
       # Emacs daemon's systemd environment may not carry XDG_DATA_DIRS.
       "enchant/hunspell" = lib.mkIf (!standalone) {

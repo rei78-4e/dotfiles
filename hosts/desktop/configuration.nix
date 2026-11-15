@@ -169,6 +169,9 @@ in
     stdenv.cc.cc
     zlib
     openssl
+    webkitgtk_4_1
+    gtk3
+    glib
   ];
 
   programs.ssh.startAgent = false;
