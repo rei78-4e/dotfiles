@@ -75,6 +75,7 @@ config.local.fish
 !/.config/obs-studio/basic/profiles/
 /.config/obs-studio/basic/scenes/*
 !/.config/obs-studio/basic/scenes/*.json
+/.config/obs-studio/basic/scenes/rec.json
 /.config/obs-studio/basic/profiles/*
 !/.config/obs-studio/basic/profiles/*/
 /.config/obs-studio/basic/profiles/*/*
