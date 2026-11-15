@@ -1,0 +1,5 @@
+inherits = "rose_pine_dawn"
+
+"keyword" = {fg = "iris", modifiers = ["italic"] }
+"function.macro" = { fg = "iris", modifiers = ["italic"] }
+
