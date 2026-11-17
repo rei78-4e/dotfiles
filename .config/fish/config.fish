@@ -87,3 +87,8 @@ if test -f "$HOME/.env"
         test -n "$item[1]"; and set -gx $item[1] $item[2]
     end
 end
+
+if not test -f /etc/NIXOS
+    # opencode
+    fish_add_path /home/rei/.opencode/bin
+end

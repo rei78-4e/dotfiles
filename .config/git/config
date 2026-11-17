@@ -2,10 +2,11 @@
 	defaultBranch = main
 [user]
 	name = rei78
-  email = senox78.am2@gmail.com
-	signingkey = 0xCC8659005EEB10EA
+	email = senox78.am2@gmail.com
+	# signingkey = 0xCC8659005EEB10EA
 [include]
 	path = ~/.config/git-signing.conf
+	path = ~/.config/git/local
 [core]
 	excludesfile = ~/.gitignore_global
 	pager = less

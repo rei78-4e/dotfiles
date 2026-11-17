@@ -86,3 +86,4 @@ config.local.fish
 .config/emacs/org-typst-inline/
 .config/emacs/projects.eld
 .config/emacs/tramp
+.config/git/local
