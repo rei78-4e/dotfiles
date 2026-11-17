@@ -62,6 +62,10 @@
               clippy
               rustfmt
             ];
+
+            shellHook = ''
+              [ "$EDITOR" = "hx" ] && { grep -qxsF '/.direnv' .ignore .gitignore || echo '/.direnv' >> .ignore; }
+            '';
           };
         }
       );

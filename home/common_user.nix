@@ -165,6 +165,9 @@ let
     basedpyright
     ruff
 
+    # ===== Clojure =====
+    babashka # bb
+
     tailscale
 
     # ===== Typst =====
@@ -571,28 +574,6 @@ in
 
       Timer = {
         OnCalendar = "*-*-* *:00,15,30,45:00";
-        Persistent = false;
-      };
-
-      Install.WantedBy = [ "timers.target" ];
-    };
-
-    systemd.user.services.cliphist-clean = {
-      Unit.Description = "Clean cliphist";
-
-      Service = {
-        Type = "oneshot";
-        ExecStart = "${lib.getExe pkgs.cliphist} wipe";
-        StandardOutput = "journal";
-        StandardError = "journal";
-      };
-    };
-
-    systemd.user.timers.cliphist-clean = {
-      Unit.Description = "Clean cliphist every week";
-
-      Timer = {
-        OnCalendar = "weekly";
         Persistent = false;
       };
 

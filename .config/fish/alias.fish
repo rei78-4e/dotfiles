@@ -90,6 +90,7 @@ abbr -a mi mediainfo
 abbr -a n 'nvim .'
 abbr -a e 'emacs -nw .'
 abbr -a oc opencode
+abbr -a ai 'cd $HOME/org && opencode'
 abbr -a cl claude
 
 function toup
