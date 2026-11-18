@@ -191,3 +191,30 @@ abbr -a Ruby 'cd $HOME/Develop/lang/Ruby &&
               nix develop -c irb --simple-prompt'
 
 abbr -a lang 'cd $HOME/Develop/lang'
+
+#  ╔═╗ ╦═╗ ╔═╗    ╔╦╗ ╔═╗ ╔╦╗ ╔═╗      ╔═╗ ╦ ╦ ╔╗╔
+#  ║ ║ ╠╦╝ ║ ╦ ── ║║║ ║ ║  ║║ ║╣       ╠╣  ║ ║ ║║║
+#  ╚═╝ ╩╚═ ╚═╝    ╩ ╩ ╚═╝ ═╩╝ ╚═╝      ╚   ╚═╝ ╝╚╝
+
+function jl
+    set -q argv[1]; or set argv[1] "$HOME/org/journal.org"
+    set target $argv[1]
+    echo $target
+
+    mkdir -p (dirname "$target")
+    test -e "$target"; or touch "$target"
+
+    set dt_lst \
+        "* "(date "+%Y") \
+        "** "(date "+%Y-%m %B") \
+        "*** "(date "+%Y-%m-%d %a")
+
+    for dt in $dt_lst
+        if not grep -qxF "$dt" "$target" 2>/dev/null
+            echo "$dt" >>"$target"
+        end
+    end
+
+    test -n (tail -n 1 "$target"); and echo "" >>"$target"
+    $EDITOR "$target:"(count (cat "$target"))
+end

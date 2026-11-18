@@ -106,6 +106,8 @@ let
     ghq
     difftastic
 
+    mosh
+
     # ===== Editor =====
     vim
     neovim

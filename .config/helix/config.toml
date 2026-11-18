@@ -94,3 +94,9 @@ C-l = "move_char_right"
 
 [keys.insert.j]
 j = "normal_mode"
+
+[keys.normal.space]
+t = ":pipe-to tmux load-buffer - && tmux paste-buffer -p -t '{last}' && tmux send-keys -t '{last}' Enter"
+
+[keys.select.space]
+t = ":pipe-to tmux load-buffer - && tmux paste-buffer -p -t '{last}' && tmux send-keys -t '{last}' Enter"
