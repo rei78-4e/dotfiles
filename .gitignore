@@ -87,3 +87,6 @@ config.local.fish
 .config/emacs/projects.eld
 .config/emacs/tramp
 .config/git/local
+
+# tmux local overrides live next to tmux.conf (dir is symlinked from $HOME)
+.config/tmux/local.conf

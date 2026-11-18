@@ -319,7 +319,7 @@ in
           extraConfig = "set -g @rose_pine_variant 'dawn'";
         }
       ];
-      extraConfig = "source-file ~/.config/tmux/.tmux.conf";
+      extraConfig = "source-file ${dotfilesDir}/.config/tmux/tmux.conf";
     };
 
     programs.emacs = lib.mkIf (!standalone) {
@@ -376,11 +376,9 @@ in
 
     xdg.enable = true;
     xdg.configFile = {
-      # programs.tmux generates tmux/tmux.conf, so link the editable files
-      # individually instead of replacing its parent directory.
-      "tmux/.tmux.conf" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/.config/tmux/.tmux.conf";
-      };
+      # programs.tmux generates tmux/tmux.conf, so the repo config may not take
+      # that name in $HOME. It is sourced by absolute path from extraConfig
+      # instead of being linked.
       "tmux/clipboard.sh" = {
         source = config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/.config/tmux/clipboard.sh";
       };
