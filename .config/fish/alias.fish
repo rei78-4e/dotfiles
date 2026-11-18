@@ -6,6 +6,50 @@ abbr -a copy wl-copy
 
 abbr -a cdd 'cd $HOME/Develop'
 
+#  ╔╦╗ ╔═╗ ╔╦╗ ╦ ╦
+#  ║║║ ╠═╣  ║  ╠═╣
+#  ╩ ╩ ╩ ╩  ╩  ╩ ╩
+
+function +
+    set res $argv[1]
+    for i in $argv[2..-1]
+        set res (math $i + $res)
+    end
+    echo $res
+end
+
+function s
+    set res $argv[1]
+    for i in $argv[2..-1]
+        set res (math $res - $i)
+    end
+    echo $res
+end
+
+function x
+    set res $argv[1]
+    for i in $argv[2..-1]
+        set res (math $res * $i)
+    end
+    echo $res
+end
+
+function d
+    set res $argv[1]
+    for i in $argv[2..-1]
+        set res (math $res / $i)
+    end
+    echo $res
+end
+
+function or_default
+    if test -n "$argv[1]"
+        printf '%s\n' $argv[1]
+    else
+        printf '%s\n' $argv[2]
+    end
+end
+
 function g
     set -l repo (ghq list | fzf --preview 'ls (ghq root)/{}')
     and test -n "$repo"
@@ -98,8 +142,38 @@ function toup
 end
 
 # tmux
-abbr -a tl 'tmux ls'
 abbr -a tmr 'tmux kill-session -t'
+
+#  ╔╦╗ ╔╦╗ ╦ ╦  ╦ ╦      ╔═╗ ╦ ╦ ╔╗╔ ╔═╗
+#   ║  ║║║ ║ ║ ╔╩╦╝      ╠╣  ║ ║ ║║║ ║  
+#   ╩  ╩ ╩ ╚═╝ ╩ ╩       ╚   ╚═╝ ╝╚╝ ╚═╝
+
+function tl --description 'Pick or create a tmux session with fzf'
+    set -l sessions (tmux list-sessions -F '#{session_name}' 2>/dev/null)
+
+    set -l picked (
+        begin
+            if set -q sessions[1]
+                printf '%s\n' $sessions
+            end
+        end | fzf --prompt='tmux session> ' \
+                  --header='Enter: open   (type a new name to create)' \
+                  --print-query |
+            tail -n 1
+    )
+
+    test -n "$picked"; or return 0
+
+    if not set -q TMUX
+        ta $picked
+        return
+    end
+
+    if not tmux has-session -t "=$picked" 2>/dev/null
+        tmux new-session -d -s $picked
+    end
+    tmux switch-client -t "=$picked"
+end
 
 function ta --description 'Attach or create a tmux session'
     if test -n "$argv[1]"
@@ -217,4 +291,36 @@ function jl
 
     test -n (tail -n 1 "$target"); and echo "" >>"$target"
     $EDITOR "$target:"(count (cat "$target"))
+end
+
+function tt
+    set -l file ~/org/inbox.org
+    set -l title $argv[1]
+    set -l in_dt $argv[2]
+    set -l pos (grep -n -i -E '#\+(title|author|date|startup|todo|keywords|subtitle|description|language)' $file | tail -n 1 | cut -d: -f1)
+
+    set -l tm
+    test -z "$title"; and read -P "title: " title
+    if test -z "$in_dt"
+        read -P "date(skip=s): " in_dt
+        if test "$in_dt" = s
+            set in_dt
+        else
+            set dt (date -d "$in_dt" "+<%Y-%m-%d %a>")
+            and printf "⇒ %s\n" $dt >&2
+        end
+    end
+
+    set -l tmp (mktemp)
+
+    set -l lines (printf "\n* TODO %s" $title)
+    test -n "$in_dt"; and set -a lines $dt
+    printf '%s\n' $lines >$tmp
+    sed -i "$pos r $tmp" $file
+    rm $tmp
+
+    read -n 1 -P "open(y/n)?" ans
+    if string match -qi y -- $ans
+        $EDITOR "$file:"(+ $pos 3)
+    end
 end
