@@ -3,10 +3,9 @@
 [user]
 	name = rei78
 	email = senox78.am2@gmail.com
-	# signingkey = 0xCC8659005EEB10EA
+	signingkey = 025DAF8688B9B9DD00D48445445D71739E7094E5
 [include]
 	path = ~/.config/git-signing.conf
-	path = ~/.config/git/local
 [core]
 	excludesfile = ~/.gitignore_global
 	pager = less
