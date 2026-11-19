@@ -6,5 +6,12 @@
   "tabs": {
     "mode": "off"
   },
-  "plugins": ["./herdr-opencode"]
+  "plugins": ["./herdr-opencode"],
+  "keybinds": {
+    "session.page.up": "ctrl+u",
+    "session.page.down": "ctrl+d",
+    "input.delete.to.line.start": "none",
+    "input.delete": "delete,shift+delete",
+    "app.exit": "ctrl+c,<leader>q"
+  }
 }
