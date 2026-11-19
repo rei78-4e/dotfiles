@@ -23,6 +23,9 @@ if status is-interactive
     set -U fish_ambiguous_case_sensitive
     set -U fish_prompt_pwd_dir_length 0
 
+    # tmux が Ctrl+Backspace を C-w として転送してくるので単語削除に割り当てる
+    bind ctrl-w backward-delete-word
+
     # direnv
     if type -q direnv
         direnv hook fish | source
