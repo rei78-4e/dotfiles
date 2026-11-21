@@ -388,10 +388,10 @@ in
         source = mkConfigLink "nvim";
         recursive = false;
       };
-      # "emacs" = {
-      #   source = mkConfigLink "emacs";
-      #   recursive = false;
-      # };
+      "emacs" = {
+        source = mkConfigLink "emacs";
+        recursive = false;
+      };
       # Enchant (used by Emacs's jinx) looks here for user dictionaries; the
       # Emacs daemon's systemd environment may not carry XDG_DATA_DIRS.
       "enchant/hunspell" = lib.mkIf (!standalone) {

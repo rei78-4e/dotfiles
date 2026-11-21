@@ -325,6 +325,7 @@ in
 
   fonts = {
     packages = with pkgs; [
+      crimson-pro
       ibm-plex
       monaspace
       victor-mono
