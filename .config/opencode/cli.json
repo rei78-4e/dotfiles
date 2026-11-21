@@ -1,7 +1,8 @@
 {
   "$schema": "https://opencode.ai/v2/cli.json",
   "theme": {
-    "name": "system"
+    "name": "rosepine",
+    "mode": "light"
   },
   "tabs": {
     "mode": "off"
@@ -13,5 +14,9 @@
     "input.delete.to.line.start": "none",
     "input.delete": "delete,shift+delete",
     "app.exit": "ctrl+c,<leader>q"
+  },
+  "animations": false,
+  "session": {
+    "thinking": "hide"
   }
 }
