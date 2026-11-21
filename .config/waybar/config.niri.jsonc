@@ -2,9 +2,9 @@
 {
   "layer": "top",
   "position": "top",
-  "start_hidden": true,
-  "mode": "overlay",
-  "height": 26,
+  // "start_hidden": true,
+  // "mode": "overlay",
+  "height": 22,
   "spacing": 0,
   "modules-left": [
     "custom/launcher",

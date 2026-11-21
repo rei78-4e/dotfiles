@@ -3,7 +3,7 @@
 # ╩ ╩ ╚═╝ ╚═╝ ╩╚═
 
 abbr -a copy wl-copy
-
+abbr -a fastfetch 'fastfetch --logo "$(shuf -n 1 -e ~/Pictures/ff_logos/*.png)"'
 abbr -a cdd 'cd $HOME/Develop'
 
 #  ╔╦╗ ╔═╗ ╔╦╗ ╦ ╦
@@ -303,7 +303,7 @@ function tt
     test -z "$title"; and read -P "title: " title
     if test -z "$in_dt"
         read -P "date(skip=s): " in_dt
-        if test "$in_dt" = s
+        if test "$in_dt" = s; or test "$in_dt" = S
             set in_dt
         else
             set dt (date -d "$in_dt" "+<%Y-%m-%d %a>")
