@@ -90,3 +90,4 @@ config.local.fish
 
 # tmux local overrides live next to tmux.conf (dir is symlinked from $HOME)
 .config/tmux/local.conf
+/.config/emacs/tree-sitter
