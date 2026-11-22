@@ -20,7 +20,8 @@ output "DP-1" {
 output "eDP-1" {
     mode "1920x1200"
     scale 1.0
-    position x=-1920 y=240
+    // 14" laptop screen: right of the 27" DP-1 (logical width 2560), vertically centered.
+    position x=2560 y=120
 }
 
 output "DP-3" {

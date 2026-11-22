@@ -270,7 +270,7 @@ abbr -a lang 'cd $HOME/Develop/lang'
 #  ║ ║ ╠╦╝ ║ ╦ ── ║║║ ║ ║  ║║ ║╣       ╠╣  ║ ║ ║║║
 #  ╚═╝ ╩╚═ ╚═╝    ╩ ╩ ╚═╝ ═╩╝ ╚═╝      ╚   ╚═╝ ╝╚╝
 
-function jl
+function jl --description "today journal.org"
     set -q argv[1]; or set argv[1] "$HOME/org/journal.org"
     set target $argv[1]
     echo $target
@@ -293,7 +293,7 @@ function jl
     $EDITOR "$target:"(count (cat "$target"))
 end
 
-function tt
+function tt --description "add to inbox.org"
     set -l file ~/org/inbox.org
     set -l title $argv[1]
     set -l in_dt $argv[2]

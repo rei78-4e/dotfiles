@@ -740,6 +740,15 @@ identifiers."
 (use-package web-mode
   :mode ("\\.astro\\'" "\\.tsx?\\'" "\\.jsx\\'"))
 
+;; Clojure editing and REPL support come from package.el (MELPA): clojure-mode
+;; provides the major modes, paredit handles structural editing, and CIDER
+;; supplies cider-jack-in / cider-connect against a running nREPL.
+;; clojure-mode's own autoloads map .clj/.cljc/.cljs/.edn to the right modes.
+(use-package clojure-mode)
+(use-package paredit
+  :hook ((clojure-mode clojurec-mode clojurescript-mode) . paredit-mode))
+(use-package cider)
+
 (defun rei78/scratchpad-frame-p ()
   "Return non-nil when the selected frame is the Scratchpad Emacs frame."
   (equal (frame-parameter nil 'title) "Scratchpad Emacs"))
@@ -803,12 +812,23 @@ identifiers."
 
 (with-eval-after-load 'general
   (rei78/leader
+   "a" '(eglot-code-actions :which-key "code action")
    "l" '(:ignore t :which-key "language")
-   "la" '(eglot-code-actions :which-key "code action")
    "ld" '(xref-find-definitions :which-key "definition")
    "lr" '(eglot-rename :which-key "rename")
    "lf" '(apheleia-format-buffer :which-key "format")
    "lh" '(eldoc-doc-buffer :which-key "doc at point")))
+
+;; M-RET runs code actions in Eglot-managed buffers.  `org-mode-map' binds
+;; M-RET to `org-meta-return' and outranks the global map, so Org keeps it.
+(defun rei78/eglot-code-actions-maybe ()
+  "Run `eglot-code-actions' only when the buffer has an Eglot server."
+  (interactive)
+  (if (eglot-current-server)
+      (call-interactively #'eglot-code-actions)
+    (user-error "No Eglot server in this buffer")))
+
+(global-set-key (kbd "M-RET") #'rei78/eglot-code-actions-maybe)
 
 ;; Jinx is enabled from the after-init hooks run just below.  `jinx-mode'
 ;; snapshots `jinx-exclude-regexps' into a buffer-local regexp when it is
