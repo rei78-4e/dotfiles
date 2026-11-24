@@ -775,10 +775,11 @@ identifiers."
 
 ;; Eglot expands LSP completion snippets through yasnippet.  Without it,
 ;; snippet placeholders such as `${1:}` are inserted as literal text.
+;; Enable yas-minor-mode only in Eglot-managed buffers so the global completion
+;; stack is left untouched.
 (use-package yasnippet
   :demand t
-  :config
-  (yas-global-mode 1))
+  :hook (eglot-managed-mode . yas-minor-mode))
 
 ;; flake.nix and Clojure project files act as project roots even without VCS.
 ;; Without this Eglot (and project.el) cannot find a project in such trees.

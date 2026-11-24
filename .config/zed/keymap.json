@@ -53,6 +53,7 @@
       "space b": "tab_switcher::Toggle",
       "space /": "pane::DeploySearch",
       "space s": "outline::Toggle",
+      "space space": "command_palette::Toggle"
     },
   },
 ]

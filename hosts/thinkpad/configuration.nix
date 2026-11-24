@@ -324,12 +324,23 @@ in
     }
   ];
 
+  # The hibernation image lives in /swapfile on the encrypted root filesystem.
+  # Point resume= at the unlocked mapper device, not the inner ext4 UUID from
+  # HibernateLocation: that UUID only exists after the LUKS passphrase is
+  # entered, and the EFI-variable path times out after 2 minutes. An explicit
+  # resume= makes systemd wait indefinitely, so a slow passphrase entry no
+  # longer turns a resume into a fresh boot (which looks like a logout).
+  boot.resumeDevice = "/dev/mapper/luks-2f10e9ea-8b59-418a-99ad-b4d3812e0d10";
+
   # zswap instead of zram: when hibernation shrinks memory, zram swaps into RAM
   # itself and image creation fails with -ENOMEM. zswap writes back to the disk swap.
   boot.kernelParams = [
     "zswap.enabled=1"
     "zswap.compressor=zstd"
     "zswap.max_pool_percent=25"
+    # Page offset of /swapfile within the filesystem (55150592 bytes / 4096).
+    # Recheck with `sudo filefrag -v /swapfile` if the swapfile is recreated.
+    "resume_offset=13466"
   ];
 
   # After a long s2idle the firmware SMI can wedge and an EFI runtime call hangs
