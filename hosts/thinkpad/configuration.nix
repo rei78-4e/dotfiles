@@ -362,6 +362,12 @@ in
     };
   };
 
+  # 16G swap に対してカーネル既定の 5.7G では hibernate image が入らず
+  # "Normal pages needed > available pages" で -ENOMEM になる
+  systemd.tmpfiles.rules = [
+    "w /sys/power/image_size - - - - 10737418240"
+  ];
+
   systemd.sleep.settings.Sleep.AllowHibernation = true;
 
   systemd.services.systemd-hibernate.serviceConfig.ExecStartPre = [

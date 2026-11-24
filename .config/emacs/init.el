@@ -780,6 +780,17 @@ identifiers."
   :config
   (yas-global-mode 1))
 
+;; flake.nix and Clojure project files act as project roots even without VCS.
+;; Without this Eglot (and project.el) cannot find a project in such trees.
+(with-eval-after-load 'project
+  (dolist (marker '("flake.nix" "deps.edn" "project.clj" "bb.edn"))
+    (add-to-list 'project-vc-extra-root-markers marker)))
+
+(defun rei78/clojure-eglot-ensure ()
+  "Start Eglot in Clojure buffers only when clojure-lsp is on PATH."
+  (when (executable-find "clojure-lsp")
+    (eglot-ensure)))
+
 ;; Eglot is built into Emacs.  It starts the same language servers used by the
 ;; rest of this dotfiles setup and publishes diagnostics through Flymake.
 (use-package eglot
@@ -796,10 +807,12 @@ identifiers."
          (c++-mode . eglot-ensure)
          (js-mode . eglot-ensure)
          (json-mode . eglot-ensure)
-         (css-mode . eglot-ensure))
+         (css-mode . eglot-ensure)
+         (clojure-mode . rei78/clojure-eglot-ensure))
   :config
   (dolist (entry
-           '(((nix-mode nix-ts-mode) . ("nil"))
+           '(((clojure-mode clojurec-mode clojurescript-mode) . ("clojure-lsp"))
+             ((nix-mode nix-ts-mode) . ("nil"))
              ((rust-mode rust-ts-mode) . ("rust-analyzer"))
              ((go-mode go-ts-mode) . ("gopls"))
              ((zig-mode zig-ts-mode) . ("zls"))

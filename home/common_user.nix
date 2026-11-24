@@ -469,6 +469,10 @@ in
         source = mkConfigLink "obs-studio";
         recursive = false;
       };
+      "zed" = {
+        source = mkConfigLink "zed";
+        recursive = false;
+      };
     };
 
     xdg.desktopEntries.emacs = lib.mkIf (!standalone) {

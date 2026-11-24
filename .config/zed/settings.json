@@ -1,0 +1,80 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "relative_line_numbers": "enabled",
+  "show_whitespaces": "trailing",
+  "cli_default_open_behavior": "existing_window",
+  "icon_theme": "Zed (Default)",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 500
+    }
+  },
+  "cursor_animation": {
+    "enabled": true
+  },
+  "markdown_preview": {
+    "font_family": "Victor Mono"
+  },
+  "buffer_font_weight": 800.0,
+  "ui_font_weight": 800.0,
+  "ui_font_family": "Victor Mono",
+  "terminal": {
+    "font_family": "Victor Mono",
+    "font_size": 12.0,
+    "font_weight": 800.0
+  },
+  "buffer_line_height": "standard",
+  "buffer_font_family": "Victor Mono",
+  "buffer_font_fallbacks": ["Cica", "Moralerspace Argon HW"],
+  "project_panel": {
+    "dock": "left"
+  },
+  "outline_panel": {
+    "dock": "left"
+  },
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "agent": {
+    "dock": "right",
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "git_panel": {
+    "dock": "left"
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+    "anthropic_retention": false
+  },
+  "vim_mode": true,
+  "agent_servers": {
+    "codex-acp": {
+      "type": "registry"
+    }
+  },
+  "base_keymap": "Zed",
+  "ui_font_size": 14.0,
+  "buffer_font_size": 12.0,
+  "theme": {
+    "mode": "light",
+    "light": "Rosé Pine Dawn",
+    "dark": "Rosé Pine Moon"
+  },
+  "experimental.theme_overrides": {
+    "syntax": {
+      "keyword": {
+        "color": "#907aa9",
+        "font_style": "italic"
+      }
+    }
+  }
+}
