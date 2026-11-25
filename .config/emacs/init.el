@@ -139,6 +139,15 @@
      ('emacs 'box)
      (_ 'box))))
 
+;;; lightweight effects
+(pixel-scroll-precision-mode 1)
+(setq pixel-scroll-precision-large-scroll-height 40.0
+      pixel-scroll-precision-interpolate-page t)
+(setq eglot-events-buffer-config '(:size 0)) ; ログを切って高速化
+(setq read-process-output-max (* 1024 1024))
+(use-package gcmh :config (gcmh-mode 1))
+(global-so-long-mode 1) ; 長い行でのフリーズを防ぐ
+
 ;;; Files, backups, and XDG-friendly state
 
 (setq backup-directory-alist `(("." . ,(expand-file-name "backup/" rei78/cache-dir)))
@@ -525,24 +534,24 @@ soon as an emacsclient GUI frame is created."
   (global-set-key (kbd "C-\\") #'rei78/toggle-term)
 
   (rei78/leader
-   "SPC" '(execute-extended-command :which-key "M-x")
-   "d" '(dired-jump :which-key "filer")
-   "n" '(consult-focus-lines :which-key "hide non-matches")
-   "f" '(rei78/consult-fd-buffer-tab :which-key "find files")
-   "/" '(consult-ripgrep :which-key "grep")
-   "m" '(consult-mark :which-key "marks")
-   "u" '(undo-redo :which-key "undo redo")
-   "s" '(consult-imenu :which-key "outline")
-   "S" '(consult-org-heading :which-key "org headings")
-   "t" '(:ignore t :which-key "toggle")
-   "tb" '(rei78/toggle-theme :which-key "toggle theme")
-   "tt" '(rei78/toggle-term :which-key "terminal")
-   "o" '(:ignore t :which-key "org")
-   "ot" '(org-todo :which-key "todo state")
-   "oc" '(org-toggle-checkbox :which-key "toggle checkbox")
-   "ol" '(org-insert-link :which-key "insert link")
-   "oo" '(org-open-at-point :which-key "open link")
-   "oi" '(org-toggle-inline-images :which-key "toggle images")))
+    "SPC" '(execute-extended-command :which-key "M-x")
+    "d" '(dired-jump :which-key "filer")
+    "n" '(consult-focus-lines :which-key "hide non-matches")
+    "f" '(rei78/consult-fd-buffer-tab :which-key "find files")
+    "/" '(consult-ripgrep :which-key "grep")
+    "m" '(consult-mark :which-key "marks")
+    "u" '(undo-redo :which-key "undo redo")
+    "s" '(consult-imenu :which-key "outline")
+    "S" '(consult-org-heading :which-key "org headings")
+    "t" '(:ignore t :which-key "toggle")
+    "tb" '(rei78/toggle-theme :which-key "toggle theme")
+    "tt" '(rei78/toggle-term :which-key "terminal")
+    "o" '(:ignore t :which-key "org")
+    "ot" '(org-todo :which-key "todo state")
+    "oc" '(org-toggle-checkbox :which-key "toggle checkbox")
+    "ol" '(org-insert-link :which-key "insert link")
+    "oo" '(org-open-at-point :which-key "open link")
+    "oi" '(org-toggle-inline-images :which-key "toggle images")))
 
 ;; (global-set-key (kbd "C-s") #'save-buffer)
 
@@ -680,8 +689,8 @@ soon as an emacsclient GUI frame is created."
 
 (with-eval-after-load 'general
   (rei78/leader
-   "p" '(:ignore t :which-key "project")
-   "pg" '(rei78/ghq-open-repository :which-key "open ghq repository")))
+    "p" '(:ignore t :which-key "project")
+    "pg" '(rei78/ghq-open-repository :which-key "open ghq repository")))
 
 (use-package corfu
   :hook (after-init . global-corfu-mode)
@@ -826,12 +835,12 @@ identifiers."
 
 (with-eval-after-load 'general
   (rei78/leader
-   "a" '(eglot-code-actions :which-key "code action")
-   "l" '(:ignore t :which-key "language")
-   "ld" '(xref-find-definitions :which-key "definition")
-   "lr" '(eglot-rename :which-key "rename")
-   "lf" '(apheleia-format-buffer :which-key "format")
-   "lh" '(eldoc-doc-buffer :which-key "doc at point")))
+    "a" '(eglot-code-actions :which-key "code action")
+    "l" '(:ignore t :which-key "language")
+    "ld" '(xref-find-definitions :which-key "definition")
+    "lr" '(eglot-rename :which-key "rename")
+    "lf" '(apheleia-format-buffer :which-key "format")
+    "lh" '(eldoc-doc-buffer :which-key "doc at point")))
 
 ;; M-RET runs code actions in Eglot-managed buffers.  `org-mode-map' binds
 ;; M-RET to `org-meta-return' and outranks the global map, so Org keeps it.

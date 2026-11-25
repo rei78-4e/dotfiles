@@ -328,6 +328,7 @@ in
       crimson-pro
       ibm-plex
       monaspace
+      plemoljp
       victor-mono
       noto-fonts
       noto-fonts-cjk-sans
@@ -376,6 +377,7 @@ in
     swtpm
     udiskie
     usbutils
+    wtype
     # niri 26.04+ provides X11 exclusively through xwayland-satellite
     # (on-demand). Without it there is no X server at all: DISPLAY stays empty
     # and X clients (Steam, etc.) fail with "Unable to open a connection to X".

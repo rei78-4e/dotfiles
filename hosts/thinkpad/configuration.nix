@@ -338,9 +338,11 @@ in
     "zswap.enabled=1"
     "zswap.compressor=zstd"
     "zswap.max_pool_percent=25"
-    # Page offset of /swapfile within the filesystem (55150592 bytes / 4096).
-    # Recheck with `sudo filefrag -v /swapfile` if the swapfile is recreated.
-    "resume_offset=13466"
+    # Physical offset of /swapfile's first extent in pages (same unit as
+    # resume_offset= and as the HibernateLocation EFI variable). Get it from the
+    # first physical_offset (4K blocks) row of `sudo filefrag -v /swapfile`.
+    # Recheck if the swapfile is recreated, since the offset moves.
+    "resume_offset=55150592"
   ];
 
   # After a long s2idle the firmware SMI can wedge and an EFI runtime call hangs

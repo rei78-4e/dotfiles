@@ -284,10 +284,11 @@ binds {
     Super+E { spawn-sh "emacs $HOME/org"; }
     Super+Shift+D { spawn-sh "$HOME/dotfiles/script/niri_views.sh"; }
     Super+Q repeat=false { close-window; }
-    Super+T { spawn "kitty" "--single-instance"; }
+    Super+T { spawn-sh "$HOME/dotfiles/script/new-kitty.sh"; }
     Super+M { maximize-window-to-edges; }
     Super+Shift+E { quit; }
-    Super+B { spawn-sh "pkill -SIGUSR1 waybar"; }
+    Super+B { spawn-sh "chromium"; }
+    Super+Z { spawn "zeditor"; }
     F23 { spawn-sh "pkill -SIGUSR1 waybar"; }
     Super+V { toggle-window-floating; }
     Super+F { maximize-column; }
@@ -374,4 +375,3 @@ binds {
     Alt+Minus repeat=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-"; }
     Super+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 }
-

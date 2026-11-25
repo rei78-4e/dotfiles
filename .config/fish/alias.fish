@@ -57,9 +57,8 @@ function g
 end
 
 function gg
-    set -l dir (fd . "$HOME/Develop" --max-depth 1 --type d |
-        sed "s|$HOME/Develop/||" |
-        fzf --preview 'eza "$HOME/Develop/{}"')
+    set -l dir (eza -1 -s modified -r --only-dirs "$HOME/Develop" |
+        fzf --no-sort --preview 'eza "$HOME/Develop/{}"')
 
     test -n "$dir"; and cd "$HOME/Develop/$dir"
 end
@@ -132,6 +131,7 @@ abbr -a y yazi
 abbr -a h 'hx .'
 abbr -a mi mediainfo
 abbr -a n 'nvim .'
+abbr -a v 'vim .'
 abbr -a e 'emacs -nw .'
 abbr -a oc opencode
 abbr -a ai 'cd $HOME/org && opencode'

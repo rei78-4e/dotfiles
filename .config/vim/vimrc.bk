@@ -1,0 +1,296 @@
+" Disable netrw (default file explorer)
+let g:loaded_netrw = 1
+let g:loaded_netrwPlugin = 1
+
+set relativenumber
+set number
+
+set list
+set listchars=tab:›\ ,trail:~,nbsp:␣
+
+set wrap
+set linebreak
+set breakindent
+set showbreak=⤷\ 
+
+set clipboard=unnamedplus
+
+" This Vim is built with +clipboard_provider instead of +clipboard. Expose
+" the +/* registers through wl-clipboard on local Wayland sessions.
+if has('clipboard_provider') && executable('wl-copy') && executable('wl-paste')
+  function! s:WlClipboardAvailable() abort
+    return !empty($WAYLAND_DISPLAY) && empty($SSH_CONNECTION) && empty($SSH_TTY)
+  endfunction
+
+  function! s:WlClipboardCopy(register, regtype, lines) abort
+    let command = a:register ==# '*' ? 'wl-copy --primary' : 'wl-copy'
+    call system(command, a:lines)
+  endfunction
+
+  function! s:WlClipboardPaste(register) abort
+    let command = 'wl-paste --no-newline --type text/plain;charset=utf-8'
+    if a:register ==# '*'
+      let command .= ' --primary'
+    endif
+    return ['', systemlist(command)]
+  endfunction
+
+  let v:clipproviders['wl_clipboard'] = {
+        \ 'available': function('s:WlClipboardAvailable'),
+        \ 'copy': {
+        \   '+': function('s:WlClipboardCopy'),
+        \   '*': function('s:WlClipboardCopy'),
+        \ },
+        \ 'paste': {
+        \   '+': function('s:WlClipboardPaste'),
+        \   '*': function('s:WlClipboardPaste'),
+        \ },
+        \ }
+  set clipmethod^=wl_clipboard
+endif
+
+set hlsearch
+
+set tabstop=2
+set shiftwidth=2
+set expandtab
+
+set termguicolors
+set updatetime=1000
+set cursorline
+
+set mouse=a
+set signcolumn=yes
+
+set autoread
+set nomodeline
+
+let &t_SI = "\<Esc>[6 q" " Insert mode: Steady Bar
+let &t_SR = "\<Esc>[4 q" " Replace mode: Steady Underline
+let &t_EI = "\<Esc>[2 q" " Normal mode: Steady Block
+
+syntax on
+filetype plugin indent on
+syntax match DangerousChars /[\u200B\u200C\u200D\uFEFF\u202E\u2066-\u2069]/
+highlight DangerousChars ctermbg=red guibg=red
+
+" ---------------------
+"  XDG base directory
+" ---------------------
+let s:config_home = empty($XDG_CONFIG_HOME) ? expand('~/.config') : $XDG_CONFIG_HOME
+let s:data_home   = empty($XDG_DATA_HOME)   ? expand('~/.local/share') : $XDG_DATA_HOME
+
+let s:vim_dir     = s:config_home . '/vim'
+let s:autoload_dir= s:data_home . '/vim/autoload'
+let s:plug_path   = s:autoload_dir . '/plug.vim'
+
+" Ensure runtimepath
+execute 'set runtimepath^=' . s:vim_dir
+execute 'set runtimepath+=' . s:vim_dir . '/after'
+
+" ---------------------
+"  download vim-plug
+" ---------------------
+if empty(glob(s:plug_path))
+    silent execute '!curl -fLo ' . s:plug_path . ' --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+endif
+
+" Source vim-plug
+if filereadable(s:plug_path)
+    execute 'source ' . s:plug_path
+endif
+
+" ---------------------
+"  install plugins
+" ---------------------
+call plug#begin(s:data_home . '/vim/plugged')
+
+" Color scheme
+Plug 'rose-pine/vim', { 'as': 'rosepine' }
+
+" Syntax and language tooling
+Plug 'sheerun/vim-polyglot'
+Plug 'dense-analysis/ale'
+
+" Finders
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'BurntSushi/ripgrep'
+Plug 'ryanoasis/vim-devicons'
+
+Plug 'airblade/vim-gitgutter'
+
+" ALE is the Vim-side LSP client, diagnostic UI, completion engine, and
+" formatter runner. Prefer project-local tools from a dev shell when present.
+let g:ale_linters_explicit = 1
+let g:ale_linters = {
+      \ 'c': ['clangd'],
+      \ 'cpp': ['clangd'],
+      \ 'rust': ['analyzer'],
+      \ 'go': ['gopls'],
+      \ 'lua': ['lua_language_server'],
+      \ 'python': ['pyright'],
+      \ 'javascript': ['tsserver', 'biome'],
+      \ 'javascriptreact': ['tsserver', 'biome'],
+      \ 'typescript': ['tsserver', 'biome'],
+      \ 'typescriptreact': ['tsserver', 'biome'],
+      \ 'json': ['biome'],
+      \ 'jsonc': ['biome'],
+      \ 'ocaml': ['ocamllsp'],
+      \ 'zig': ['zls'],
+      \ 'typst': ['tinymist'],
+      \ 'nix': ['nil', 'statix', 'deadnix'],
+      \ }
+
+" ALE calls this linter "pyright", but basedpyright uses the same protocol.
+let g:ale_python_pyright_executable = 'basedpyright-langserver'
+let g:ale_completion_enabled = 1
+let g:ale_completion_autoimport = 1
+let g:ale_completion_delay = 100
+let g:ale_lint_delay = 300
+let g:ale_lint_on_text_changed = 'normal'
+let g:ale_virtualtext_cursor = 'current'
+let g:ale_echo_cursor = 1
+let g:ale_sign_error = 'E'
+let g:ale_sign_warning = 'W'
+
+let g:ale_fixers = {
+      \ 'c': ['clang-format'],
+      \ 'cpp': ['clang-format'],
+      \ 'rust': ['rustfmt'],
+      \ 'go': ['gofmt'],
+      \ 'lua': ['stylua'],
+      \ 'json': ['biome'],
+      \ 'jsonc': ['biome'],
+      \ 'sh': ['shfmt'],
+      \ 'astro': ['prettier'],
+      \ 'nix': ['nixfmt'],
+      \ 'typescript': ['biome'],
+      \ 'typescriptreact': ['biome'],
+      \ 'javascript': ['biome'],
+      \ 'javascriptreact': ['biome'],
+      \ 'ocaml': ['ocamlformat'],
+      \ 'toml': ['taplo'],
+      \ 'typst': ['typstyle'],
+      \ }
+let g:ale_fix_on_save = 1
+
+call plug#end()
+
+function! s:open_file_with_icon(line)
+  let filepath = matchstr(a:line, '\S\+\s\+\zs.*')
+  execute 'edit' fnameescape(filepath)
+endfunction
+
+function! FilesWithIcons()
+  let files = systemlist('fd --type f --hidden')
+  let files = map(files, 'WebDevIconsGetFileTypeSymbol(v:val) . " " . v:val')
+  call fzf#run(fzf#wrap({
+        \ 'source': files,
+        \ 'sink': function('s:open_file_with_icon'),
+        \ }))
+endfunction
+
+command! FilesIcons call FilesWithIcons()
+
+function! CopyDiagnostic() abort
+  if exists(':ALEInfo') != 2
+    echohl WarningMsg
+    echo 'ALE is not installed. Run :PlugInstall.'
+    echohl None
+    return
+  endif
+
+  let diagnostics = filter(
+        \ copy(ale#engine#GetLoclist(bufnr(''))),
+        \ {_, diagnostic -> get(diagnostic, 'lnum', 0) == line('.')}
+        \ )
+
+  if empty(diagnostics)
+    echohl WarningMsg
+    echo 'No diagnostics found on current line.'
+    echohl None
+    return
+  endif
+
+  let diagnostic = diagnostics[0]
+  let severity = get({'E': 'Error', 'W': 'Warn', 'I': 'Info'},
+        \ get(diagnostic, 'type', ''), 'Unknown')
+  let start_lnum = get(diagnostic, 'lnum', line('.'))
+  let end_lnum = max([start_lnum, get(diagnostic, 'end_lnum', start_lnum)])
+  let start_col = get(diagnostic, 'col', 1)
+  let end_col = max([start_col, get(diagnostic, 'end_col', start_col)])
+  let context_start = max([1, start_lnum - 3])
+  let context_end = min([line('$'), end_lnum + 3])
+  let target_text = join(getline(context_start, context_end), "\n")
+  let source = get(diagnostic, 'linter_name', 'ALE')
+  let code = get(diagnostic, 'code', 'N/A')
+  let code_text = empty(code) ? 'N/A' : (type(code) == v:t_string ? code : string(code))
+
+  let clipboard_text = printf(
+        \ "%s: %s [%s] (Source: %s) at %d:%d-%d:%d\n%s\n",
+        \ severity,
+        \ get(diagnostic, 'text', ''),
+        \ code_text,
+        \ empty(source) ? 'ALE' : source,
+        \ start_lnum,
+        \ start_col,
+        \ end_lnum,
+        \ end_col,
+        \ target_text
+        \ )
+
+  call setreg('+', clipboard_text)
+  echo 'Diagnostic copied to clipboard!'
+endfunction
+
+" Settings about colorscheme
+set background=light
+colorscheme rosepine_dawn
+
+" fzf finder
+let $FZF_DEFAULT_COMMAND = 'fd --type f --hidden --follow --exclude .git'
+let g:fzf_preview_window = ['right:50%']
+let g:fzf_files_options =
+      \ '--prompt "Files> " ' .
+      \ '--preview "cat {}"'
+
+command! -bang -nargs=* Files
+  \ call fzf#vim#files(<q-args>, {
+  \ 'options': ['--preview', 'bat --style=numbers --color=always {}']
+  \ }, <bang>0)
+
+let g:gitgutter_blame = 1
+let g:gitgutter_blame_delay = 300
+let g:gitgutter_blame_prefix = ' > '
+
+" Vim Keybinds
+let mapleader = " "
+
+" finders
+" nnoremap <leader>f :FilesWithIcons <CR>
+nnoremap <leader>f :FilesIcons <CR>
+nnoremap <leader>/ :Rg <CR>
+
+nnoremap <leader>n :nohlsearch <CR>
+nnoremap <C-s> :w<CR>
+inoremap <C-s> <Esc>:w<CR>a
+vnoremap <C-s> :w<CR>
+
+" keep selection when indent/out
+vnoremap <silent> > >gv
+vnoremap <silent> < <gv
+
+nnoremap <silent> dc :call CopyDiagnostic()<CR>
+
+" LSP and diagnostics
+nnoremap <silent> K :ALEHover<CR>
+nnoremap <silent> gd :ALEGoToDefinition -tab<CR>
+nnoremap <silent> gr :ALEFindReferences -fzf<CR>
+nnoremap <silent> <leader>a :ALECodeAction<CR>
+nnoremap <silent> <leader>r :ALERename<CR>
+nnoremap <silent> [d <Plug>(ale_previous_wrap)
+nnoremap <silent> ]d <Plug>(ale_next_wrap)
+
+command! Format ALEFix
+nnoremap <silent> <leader>F :Format<CR>

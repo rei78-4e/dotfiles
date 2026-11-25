@@ -97,6 +97,7 @@ j = "normal_mode"
 
 [keys.normal.space]
 t = ":pipe-to tmux load-buffer - && tmux paste-buffer -p -t '{last}' && tmux send-keys -t '{last}' Enter"
+space = "command_palette"
 
 [keys.select.space]
 t = ":pipe-to tmux load-buffer - && tmux paste-buffer -p -t '{last}' && tmux send-keys -t '{last}' Enter"

@@ -9,20 +9,22 @@
   {
     "context": "Workspace",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
       "ctrl-\\": "terminal_panel::Toggle",
+      "ctrl-[": "agent::ToggleFocus",
+      "ctrl-]": "agent::Toggle"
     },
   },
   {
     "context": "Editor",
     "bindings": {
-      "ctrl-\\": "terminal_panel::Toggle"
+      "ctrl-\\": "terminal_panel::Toggle",
+      "ctrl-[": "agent::ToggleFocus",
+      "ctrl-]": "agent::Toggle"
     }
   },
   {
     "context": "Editor && vim_mode == insert",
     "bindings": {
-      // "j k": "vim::NormalBefore"
       "j j": "vim::SwitchToNormalMode"
     },
   },

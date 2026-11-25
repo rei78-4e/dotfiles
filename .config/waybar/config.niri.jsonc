@@ -7,7 +7,7 @@
   "height": 22,
   "spacing": 0,
   "modules-left": [
-    "custom/launcher",
+    // "custom/launcher",
     "niri/workspaces",
     "custom/niri-windows",
     "custom/niri-ratio"

@@ -7,6 +7,17 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "scrollbar": {
+    "show":"auto",
+    "cursors": true,
+    "search_results": true,
+    "git_diff": false
+  },
+  "tabs": {
+    "close_position": "left",
+    "activate_on_close": "neighbour"
+  },
+  "on_last_window_closed": "quit_app",
   "relative_line_numbers": "enabled",
   "show_whitespaces": "trailing",
   "cli_default_open_behavior": "existing_window",
@@ -20,19 +31,26 @@
     "enabled": true
   },
   "markdown_preview": {
-    "font_family": "Victor Mono"
+    "font_family": "PlemolJP",
+    "code_font_family": "Victor Mono"
   },
+
+  "when_closing_with_no_tabs": "close_window",
+  "buffer_line_height": "standard",
+  "buffer_font_family": "Victor Mono",
+  "buffer_font_fallbacks": ["PlemolJP", "Cica", "Moralerspace Argon HW"],
   "buffer_font_weight": 800.0,
+
   "ui_font_weight": 800.0,
   "ui_font_family": "Victor Mono",
+
   "terminal": {
+    "default_height": 599.0,
     "font_family": "Victor Mono",
     "font_size": 12.0,
     "font_weight": 800.0
   },
-  "buffer_line_height": "standard",
-  "buffer_font_family": "Victor Mono",
-  "buffer_font_fallbacks": ["Cica", "Moralerspace Argon HW"],
+
   "project_panel": {
     "dock": "left"
   },
@@ -43,6 +61,30 @@
     "dock": "left"
   },
   "agent": {
+    "tool_permissions": {
+      "tools": {
+        "terminal": {
+          "default": "allow"
+        },
+        "write_file": {
+          "default": "allow"
+        }
+      }
+    },
+    "sandbox_permissions": {
+      "network_hosts": [
+        "raw.githubusercontent.com",
+        "zed.dev",
+        "file"
+      ]
+    },
+    "default_profile": "write",
+    "default_model": {
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "enable_thinking": true,
+      "effort": "low"
+    },
     "dock": "right",
     "favorite_models": [],
     "model_parameters": []
@@ -66,7 +108,7 @@
   "buffer_font_size": 12.0,
   "theme": {
     "mode": "light",
-    "light": "Rosé Pine Dawn",
+    "light": "macOS Classic Light",
     "dark": "Rosé Pine Moon"
   },
   "experimental.theme_overrides": {
@@ -76,5 +118,13 @@
         "font_style": "italic"
       }
     }
+  },
+"languages": {
+  "CSS": {
+   "format_on_save": "on"
+  },
+  "HTML": {
+    "format_on_save": "on"
   }
+}
 }
